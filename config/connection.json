@@ -1,0 +1,9 @@
+
+{
+  "host": "169.230.182.91",
+  "user": "mandolin",
+  "password": "TEMP-lute",
+  "port": 3306,
+  "db": "kokel",
+  "chemspiderToken": "5b2bbfb9-1ad9-476f-b785-85facb2b522e"
+}

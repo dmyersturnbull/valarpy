@@ -1,0 +1,14 @@
+dill == 0.2.5
+PyMySQL == 0.7.6
+ChemSpiPy == 1.0.4
+h5py == 2.6.0
+natsort == 5.0.1
+numpy == 1.11.1
+scipy == 0.18.1
+scikit-learn == 0.18
+overrides == 1.7
+pandas == 0.19.0
+plumbum == 1.6.2
+jupyter == 1.0.0
+matplotlib == 1.5.3
+seaborn == 0.7.1
