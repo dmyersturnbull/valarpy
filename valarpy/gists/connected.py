@@ -1,6 +1,8 @@
+# coding=utf-8
+
 import pymysql
 import contextlib
-from typing import Tuple, List, Dict, Iterator
+from typing import Tuple, Dict, Iterator
 
 @contextlib.contextmanager
 def connected(connection: pymysql.connections.Connection):

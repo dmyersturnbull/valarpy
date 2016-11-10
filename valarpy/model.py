@@ -1,6 +1,6 @@
 from peewee import *
 
-from db import config
+from .db import config
 
 database = MySQLDatabase(config['db'], **{'user': config['user'], 'password': config['password'], 'host': config['host'], 'port': config['port']})
 
