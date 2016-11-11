@@ -37,10 +37,10 @@ class AudioFiles(BaseModel):
     created = DateTimeField()
     creator = ForeignKeyField(db_column='creator_id', null=True, rel_model=Users, to_field='id')
     filename = CharField(unique=True)
-    mp3 = TextField()
+    mp3 = BlobField()
     n_seconds = FloatField()
     notes = CharField(null=True)
-    sha1 = CharField(unique=True)
+    sha1 = BlobField(unique=True)
 
     class Meta:
         db_table = 'audio_files'
@@ -59,8 +59,8 @@ class StimulusSources(BaseModel):
 
 class AssayFrames(BaseModel):
     assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
-    frames = TextField()
-    frames_sha1 = CharField(index=True)
+    frames = BlobField()
+    frames_sha1 = BlobField(index=True)
     legacy_framerate_hertz = IntegerField()
     stimulus_source = ForeignKeyField(db_column='stimulus_source_id', rel_model=StimulusSources, to_field='id')
 
@@ -279,7 +279,7 @@ class PlateRuns(BaseModel):
     notes = CharField(null=True)
     plate = ForeignKeyField(db_column='plate_id', rel_model=Plates, to_field='id')
     sauron_configuration = ForeignKeyField(db_column='sauron_configuration_id', rel_model=SauronConfigurations, to_field='id')
-    sauronx_commit_sha1 = CharField(null=True)
+    sauronx_commit_sha1 = BlobField(null=True)
     suspicious = IntegerField()
 
     class Meta:
@@ -294,8 +294,8 @@ class Sensors(BaseModel):
         db_table = 'sensors'
 
 class SensorData(BaseModel):
-    floats = TextField()
-    floats_sha1 = CharField()
+    floats = BlobField()
+    floats_sha1 = BlobField()
     plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
     sensor = ForeignKeyField(db_column='sensor_id', rel_model=Sensors, to_field='id')
 
@@ -407,8 +407,8 @@ class WellConditions(BaseModel):
 
 class WellFeatures(BaseModel):
     external_uri = CharField(null=True)
-    floats = TextField(null=True)
-    sha1 = CharField()
+    floats = BlobField(null=True)
+    sha1 = BlobField()
     type = ForeignKeyField(db_column='type_id', rel_model=FeatureTypes, to_field='id')
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
 
@@ -421,8 +421,8 @@ class WellFeatures(BaseModel):
 class WellFrameImages(BaseModel):
     created = DateTimeField()
     frame = IntegerField()
-    png = TextField()
-    png_sha1 = CharField()
+    png = BlobField()
+    png_sha1 = BlobField()
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
 
     class Meta:

@@ -54,3 +54,24 @@ From another project in its `requirements.txt`:
 ```
 
 Make sure the release (between @ and #) matches what's in [setup.py](setup.py).
+
+
+### Generating the Peewee model
+
+```bash
+python -m pwiz -e mysql -H 169.230.182.91 -u mandolin -P kokel > model.py
+```
+
+After doing this, replace the top with:
+
+```python
+from peewee import *
+
+from .db import config
+
+database = MySQLDatabase(config['db'], **{'user': config['user'], 'password': config['password'], 'host': config['host'], 'port': config['port']})
+
+```
+
+Also convert binary fields to type `BlobField`; Peewee used `CharField` for MariaDB fields of type `binary` `varbinary` and `TextField` for fields of type `blob` and its variants.
+
