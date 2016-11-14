@@ -16,7 +16,7 @@ class Assays(BaseModel):
     created = DateTimeField()
     description = CharField(null=True)
     name = CharField(index=True)
-    sha1_of_concatetated_frame_sha1s = CharField(index=True)
+    sha1_of_concatetated_frame_sha1s = BlobField(index=True)
 
     class Meta:
         db_table = 'assays'
@@ -76,7 +76,7 @@ class Protocols(BaseModel):
     description = CharField(null=True)
     name = CharField(null=True, unique=True)
     notes = CharField(null=True)
-    sha1_of_assay_sha1s = CharField()
+    sha1_of_assay_sha1s = BlobField()
 
     class Meta:
         db_table = 'protocols'

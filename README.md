@@ -8,13 +8,14 @@ In this example, the JSON file must contain _host_, _user_, _password_, _db_, an
 ```python
 import json
 from valarpy import db
-import model
 
+# you MUST do this before importing model
 with open('config/connection.json') as f:
-	db.config = json.read(f)
+	db.config = json.load(f)
+from model import *
 
 # using the Python Object-Relational Mapping model
-for row in model.StimulusSources:
+for row in StimulusSources:
 	print(row['name'])
 
 # using SQL queries directly
@@ -34,7 +35,7 @@ See [more examples](https://github.com/kokellab/kokel-scripts) or the [Peewee do
 **A word of caution:** constructing an object in model.py will add a row to the database. For example, this will attempt to add a new Well to an existing plate:
 
 ```python
-compound = model.Well(0, -1, 1)
+compound = Well(0, -1, 1)
 ```
 
 In this case, it will fail because the object is ill-formed (for example, -1 is negative and doesn't match an entry in __plate_runs__.
