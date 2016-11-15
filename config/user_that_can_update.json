@@ -1,0 +1,8 @@
+
+{
+  "host": "169.230.182.91",
+  "user": "bassoon",
+  "password": "TEMP-trumpet",
+  "port": 3306,
+  "db": "kokel"
+}

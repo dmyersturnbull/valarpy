@@ -3,7 +3,11 @@ Python code to talk to the Kokel Lab database, Valar. Import this into other pro
 
 ### Example usage
 
-In this example, the JSON file must contain _host_, _user_, _password_, _db_, and _port_. An example is provided in [`config/connection.json`](config/connection.json).
+In this example, the JSON file must contain _host_, _user_, _password_, _db_, and _port_. Example are provided in [`config/connection/`](config/).
+Note that these are currently temporary but real users. It is essential that you _use the lowest-privileged user possible for your need_; in order, these are:
+- [`safe_read_only_user.json`](config/safe_read_only_user.json), _mandolin_ for SELECT only
+- [`user_that_can_update.json`](config/user_that_can_update.json), _bassoon_ for SELECT and UPDATE (useful for changing note, description and comment fields, fixing obvious mistakes, and setting _suspicuous_ flags)
+- [`user_that_can_insert_update_delete.json`](config/user_that_can_insert_update_delete.json), _harp_ for SELECT, UPDATE, INSERT, and DELETE; avoid using if at all possible
 
 ```python
 import json

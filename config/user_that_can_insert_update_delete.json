@@ -1,0 +1,8 @@
+
+{
+  "host": "169.230.182.91",
+  "user": "harp",
+  "password": "TEMP-oboe",
+  "port": 3306,
+  "db": "kokel"
+}
