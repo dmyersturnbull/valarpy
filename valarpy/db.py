@@ -2,7 +2,7 @@
 
 import contextlib
 import pymysql
-import valarpy.gists.connected as conned
+import gists.connected as conned
 
 import warnings
 from typing import Dict
