@@ -61,7 +61,8 @@ class AssayFrames(BaseModel):
     assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
     frames = BlobField()
     frames_sha1 = BlobField(index=True)
-    legacy_framerate_hertz = IntegerField()
+    calculated_median_framerate_hertz = DoubleField()
+    legacy_time_milliseconds = BlobField()
     stimulus_source = ForeignKeyField(db_column='stimulus_source_id', rel_model=StimulusSources, to_field='id')
 
     class Meta:
