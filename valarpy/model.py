@@ -1,5 +1,4 @@
 from peewee import *
-
 from .db import config
 
 database = MySQLDatabase(config['db'], **{'user': config['user'], 'password': config['password'], 'host': config['host'], 'port': config['port']})
@@ -61,8 +60,6 @@ class AssayFrames(BaseModel):
     assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
     frames = BlobField()
     frames_sha1 = BlobField(index=True)
-    calculated_median_framerate_hertz = DoubleField()
-    legacy_time_milliseconds = BlobField()
     stimulus_source = ForeignKeyField(db_column='stimulus_source_id', rel_model=StimulusSources, to_field='id')
 
     class Meta:
@@ -137,14 +134,21 @@ class CameraConfigurations(BaseModel):
     contrast = FloatField(null=True)
     created = DateTimeField()
     exposure = FloatField(null=True)
+    fourcc = CharField(null=True)
+    frame_height = IntegerField(null=True)
+    frame_width = IntegerField(null=True)
     frames_per_second = IntegerField(null=True)
     gain = FloatField(null=True)
-    horizontal_pixels = IntegerField(null=True)
+    gamma = FloatField(null=True)
     hue = FloatField(null=True)
     mode = IntegerField(null=True)
+    roi_x0 = FloatField(null=True)
+    roi_x1 = FloatField(null=True)
+    roi_y1 = FloatField(null=True)
+    roi_y2 = FloatField(null=True)
     saturation = FloatField(null=True)
+    sharpness = FloatField(null=True)
     startup_wait_seconds = FloatField(null=True)
-    vertical_pixels = IntegerField(null=True)
 
     class Meta:
         db_table = 'camera_configurations'
@@ -237,6 +241,7 @@ class PlateLayouts(BaseModel):
     author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
     created = DateTimeField()
     description = CharField(null=True)
+    is_template = IntegerField()
     name = CharField(unique=True)
 
     class Meta:
@@ -275,6 +280,7 @@ class PlateRuns(BaseModel):
     experimentalist = ForeignKeyField(db_column='experimentalist_id', rel_model=Users, to_field='id')
     legacy_date_run = DateField(null=True)
     legacy_incubation_time_minutes = FloatField(null=True)
+    legacy_median_framerate_hertz = FloatField(null=True)
     legacy_plate_name = CharField(unique=True)
     legacy_treatment_time = TimeField(null=True)
     notes = CharField(null=True)
@@ -285,30 +291,6 @@ class PlateRuns(BaseModel):
 
     class Meta:
         db_table = 'plate_runs'
-
-class Sensors(BaseModel):
-    created = DateTimeField()
-    description = CharField(null=True)
-    name = CharField(unique=True)
-
-    class Meta:
-        db_table = 'sensors'
-
-class SensorData(BaseModel):
-    floats = BlobField()
-    floats_sha1 = BlobField()
-    plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
-    sensor = ForeignKeyField(db_column='sensor_id', rel_model=Sensors, to_field='id')
-
-    class Meta:
-        db_table = 'sensor_data'
-
-class StimulusSourceSynonyms(BaseModel):
-    name = CharField(unique=True)
-    stimulus_source = ForeignKeyField(db_column='stimulus_source_id', rel_model=StimulusSources, to_field='id')
-
-    class Meta:
-        db_table = 'stimulus_source_synonyms'
 
 class StrainStages(BaseModel):
     generation = IntegerField(null=True)
@@ -332,6 +314,58 @@ class Strains(BaseModel):
 
     class Meta:
         db_table = 'strains'
+
+class Wells(BaseModel):
+    approx_n_fish = IntegerField(null=True)
+    control_status = CharField(null=True)
+    created = DateTimeField()
+    plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
+    strain = ForeignKeyField(db_column='strain_id', null=True, rel_model=Strains, to_field='id')
+    well_group = IntegerField(index=True, null=True)
+    well_index = IntegerField()
+
+    class Meta:
+        db_table = 'wells'
+        indexes = (
+            (('plate_run', 'control_status'), False),
+            (('plate_run', 'well_index'), True),
+        )
+
+class Rois(BaseModel):
+    well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
+    x0 = IntegerField()
+    x1 = IntegerField()
+    y0 = IntegerField()
+    y1 = IntegerField()
+
+    class Meta:
+        db_table = 'rois'
+
+class Sensors(BaseModel):
+    blob_type = CharField(null=True)
+    created = DateTimeField()
+    description = CharField(null=True)
+    n_microseconds_between = TextField(null=True)
+    name = CharField(unique=True)
+
+    class Meta:
+        db_table = 'sensors'
+
+class SensorData(BaseModel):
+    floats = TextField()
+    floats_sha1 = BlobField()
+    plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
+    sensor = ForeignKeyField(db_column='sensor_id', rel_model=Sensors, to_field='id')
+
+    class Meta:
+        db_table = 'sensor_data'
+
+class StimulusSourceSynonyms(BaseModel):
+    name = CharField(unique=True)
+    stimulus_source = ForeignKeyField(db_column='stimulus_source_id', rel_model=StimulusSources, to_field='id')
+
+    class Meta:
+        db_table = 'stimulus_source_synonyms'
 
 class StrainSynonyms(BaseModel):
     name = CharField(unique=True)
@@ -379,22 +413,6 @@ class Treatments(BaseModel):
             (('ordered_compound', 'micromolar_dose'), True),
         )
 
-class Wells(BaseModel):
-    approx_n_fish = IntegerField(null=True)
-    control_status = CharField(null=True)
-    created = DateTimeField()
-    plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
-    strain = ForeignKeyField(db_column='strain_id', null=True, rel_model=Strains, to_field='id')
-    well_group = IntegerField(index=True, null=True)
-    well_index = IntegerField()
-
-    class Meta:
-        db_table = 'wells'
-        indexes = (
-            (('plate_run', 'control_status'), False),
-            (('plate_run', 'well_index'), True),
-        )
-
 class WellConditions(BaseModel):
     micromolar_dose = FloatField(null=True)
     ordered_compound = ForeignKeyField(db_column='ordered_compound_id', rel_model=OrderedCompounds, to_field='id')
@@ -408,7 +426,7 @@ class WellConditions(BaseModel):
 
 class WellFeatures(BaseModel):
     external_uri = CharField(null=True)
-    floats = BlobField(null=True)
+    floats = TextField(null=True)
     sha1 = BlobField()
     type = ForeignKeyField(db_column='type_id', rel_model=FeatureTypes, to_field='id')
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
