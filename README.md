@@ -36,14 +36,6 @@ with db.connected():
 
 See [more examples](https://github.com/kokellab/kokel-scripts) or the [Peewee documentation](http://docs.peewee-orm.com/en/latest/) for further information.
 
-**A word of caution:** constructing an object in model.py will add a row to the database. For example, this will attempt to add a new Well to an existing plate:
-
-```python
-compound = Well(0, -1, 1)
-```
-
-In this case, it will fail because the object is ill-formed (for example, -1 is negative and doesn't match an entry in __plate_runs__.
-
 ### Installation
 
 Locally, which probably isn't needed:
@@ -55,7 +47,7 @@ pip install --install-option="--prefix=$HOME/.local" .
 From another project in its `requirements.txt`:
 
 ```
--e git+https://github.com/kokellab/valarpy.git@0.1#egg=valarpy
+git+https://github.com/kokellab/valarpy.git@0.1#egg=valarpy
 ```
 
 Make sure the release (between @ and #) matches what's in [setup.py](setup.py).
@@ -64,7 +56,7 @@ Make sure the release (between @ and #) matches what's in [setup.py](setup.py).
 ### Generating the Peewee model
 
 ```bash
-python -m pwiz -e mysql -H 169.230.182.91 -u mandolin -P kokel > model.py
+python -m pwiz -e mysql -H valinor.ucsf.edu -u mandolin -P kokel > model.py
 ```
 
 After doing this, replace the top with:
