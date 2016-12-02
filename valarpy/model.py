@@ -1,6 +1,5 @@
 from peewee import *
 from .db import config
-
 database = MySQLDatabase(config['db'], **{'user': config['user'], 'password': config['password'], 'host': config['host'], 'port': config['port']})
 
 class UnknownField(object):
@@ -15,7 +14,7 @@ class Assays(BaseModel):
     created = DateTimeField()
     description = CharField(null=True)
     name = CharField(index=True)
-    sha1_of_concatetated_frame_sha1s = BlobField(index=True)
+    sha1_of_concatetated_frame_sha1s = BlobField(index=True)  # auto-corrected to BlobField
 
     class Meta:
         db_table = 'assays'
@@ -36,10 +35,10 @@ class AudioFiles(BaseModel):
     created = DateTimeField()
     creator = ForeignKeyField(db_column='creator_id', null=True, rel_model=Users, to_field='id')
     filename = CharField(unique=True)
-    mp3 = BlobField()
+    mp3 = BlobField()  # auto-corrected to BlobField
     n_seconds = FloatField()
     notes = CharField(null=True)
-    sha1 = BlobField(unique=True)
+    sha1 = BlobField(unique=True)  # auto-corrected to BlobField
 
     class Meta:
         db_table = 'audio_files'
@@ -50,7 +49,7 @@ class StimulusSources(BaseModel):
     default_color = CharField(unique=True)
     description = CharField(null=True)
     name = CharField(unique=True)
-    rgb = CharField(null=True)
+    rgb = BlobField(null=True)  # auto-corrected to BlobField
     wavelength_nanometers = IntegerField(null=True)
 
     class Meta:
@@ -58,8 +57,8 @@ class StimulusSources(BaseModel):
 
 class AssayFrames(BaseModel):
     assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
-    frames = BlobField()
-    frames_sha1 = BlobField(index=True)
+    frames = BlobField()  # auto-corrected to BlobField
+    frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     stimulus_source = ForeignKeyField(db_column='stimulus_source_id', rel_model=StimulusSources, to_field='id')
 
     class Meta:
@@ -74,7 +73,7 @@ class Protocols(BaseModel):
     description = CharField(null=True)
     name = CharField(null=True, unique=True)
     notes = CharField(null=True)
-    sha1_of_assay_sha1s = BlobField()
+    sha1_of_assay_sha1s = BlobField()  # auto-corrected to BlobField
 
     class Meta:
         db_table = 'protocols'
@@ -122,7 +121,7 @@ class Cameras(BaseModel):
     connection_type = CharField(null=True)
     created = DateTimeField(null=True)
     description = TextField(null=True)
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(null=True)
 
     class Meta:
@@ -134,7 +133,7 @@ class CameraConfigurations(BaseModel):
     contrast = FloatField(null=True)
     created = DateTimeField()
     exposure = FloatField(null=True)
-    fourcc = CharField(null=True)
+    fourcc = BlobField(null=True)  # auto-corrected to BlobField
     frame_height = IntegerField(null=True)
     frame_width = IntegerField(null=True)
     frames_per_second = IntegerField(null=True)
@@ -209,6 +208,13 @@ class FeatureTypes(BaseModel):
     class Meta:
         db_table = 'feature_types'
 
+class LorienParameterizations(BaseModel):
+    created = DateTimeField()
+    notes = CharField(null=True)
+
+    class Meta:
+        db_table = 'lorien_parameterizations'
+
 class OrderedCompounds(BaseModel):
     batch = ForeignKeyField(db_column='batch_id', null=True, rel_model=Batches, to_field='id')
     box_number = IntegerField(null=True)
@@ -242,7 +248,7 @@ class PlateLayouts(BaseModel):
     created = DateTimeField()
     description = CharField(null=True)
     is_template = IntegerField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
 
     class Meta:
         db_table = 'plate_layouts'
@@ -283,10 +289,12 @@ class PlateRuns(BaseModel):
     legacy_median_framerate_hertz = FloatField(null=True)
     legacy_plate_name = CharField(unique=True)
     legacy_treatment_time = TimeField(null=True)
+    matlab_version = CharField(null=True)
     notes = CharField(null=True)
     plate = ForeignKeyField(db_column='plate_id', rel_model=Plates, to_field='id')
+    platform = CharField(null=True)
     sauron_configuration = ForeignKeyField(db_column='sauron_configuration_id', rel_model=SauronConfigurations, to_field='id')
-    sauronx_commit_sha1 = BlobField(null=True)
+    sauronx_commit_sha1 = BlobField(null=True)  # auto-corrected to BlobField
     suspicious = IntegerField()
 
     class Meta:
@@ -352,8 +360,8 @@ class Sensors(BaseModel):
         db_table = 'sensors'
 
 class SensorData(BaseModel):
-    floats = TextField()
-    floats_sha1 = BlobField()
+    floats = BlobField()  # auto-corrected to BlobField
+    floats_sha1 = BlobField()  # auto-corrected to BlobField
     plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
     sensor = ForeignKeyField(db_column='sensor_id', rel_model=Sensors, to_field='id')
 
@@ -426,22 +434,23 @@ class WellConditions(BaseModel):
 
 class WellFeatures(BaseModel):
     external_uri = CharField(null=True)
-    floats = TextField(null=True)
-    sha1 = BlobField()
+    floats = BlobField(null=True)  # auto-corrected to BlobField
+    lorien_parameterization = IntegerField(db_column='lorien_parameterization_id', index=True)
+    sha1 = BlobField()  # auto-corrected to BlobField
     type = ForeignKeyField(db_column='type_id', rel_model=FeatureTypes, to_field='id')
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
 
     class Meta:
         db_table = 'well_features'
         indexes = (
-            (('well', 'type'), True),
+            (('well', 'type', 'lorien_parameterization'), True),
         )
 
 class WellFrameImages(BaseModel):
     created = DateTimeField()
     frame = IntegerField()
-    png = BlobField()
-    png_sha1 = BlobField()
+    png = BlobField()  # auto-corrected to BlobField
+    png_sha1 = BlobField()  # auto-corrected to BlobField
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
 
     class Meta:
