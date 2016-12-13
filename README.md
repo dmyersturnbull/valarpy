@@ -55,20 +55,10 @@ Make sure the release (between @ and #) matches what's in [setup.py](setup.py).
 
 ### Generating the Peewee model
 
+Use [gen-peewee-model.py](https://github.com/kokellab/kl-tools/blob/master/python/kltools/gen-peewee-model.py):
+
 ```bash
-python -m pwiz -e mysql -H valinor.ucsf.edu -u mandolin -P kokel > model.py
+gen-peewee-model.py --output valarpy/model.py --host valinor.ucsf.edu --schema ../valar/schema.sql --username mandolin --db kokel
 ```
 
-After doing this, replace the top with:
-
-```python
-from peewee import *
-
-from .db import config
-
-database = MySQLDatabase(config['db'], **{'user': config['user'], 'password': config['password'], 'host': config['host'], 'port': config['port']})
-
-```
-
-Also convert binary fields to type `BlobField`; Peewee used `CharField` for MariaDB fields of type `binary` `varbinary` and `TextField` for fields of type `blob` and its variants.
-
+This will fix several critical issues that Peewee introduces.

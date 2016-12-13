@@ -1,6 +1,6 @@
 
 {
-  "host": "169.230.182.91",
+  "host": "valinor.ucsf.edu",
   "user": "harp",
   "password": "TEMP-oboe",
   "port": 3306,
