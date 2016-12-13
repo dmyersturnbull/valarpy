@@ -121,7 +121,7 @@ class Cameras(BaseModel):
     connection_type = CharField(null=True)
     created = DateTimeField(null=True)
     description = TextField(null=True)
-    name = CharField(index=True)
+    name = CharField(unique=True)
     serial_number = IntegerField(null=True)
 
     class Meta:
@@ -248,7 +248,7 @@ class PlateLayouts(BaseModel):
     created = DateTimeField()
     description = CharField(null=True)
     is_template = IntegerField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
 
     class Meta:
         db_table = 'plate_layouts'
