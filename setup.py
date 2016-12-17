@@ -9,7 +9,7 @@ setup(
 	description='Python connection code to Valar',
 	author='Douglas Myers-Turnbull',
 	url='https://github.com/kokellab/valarpy',
-	packages=['valarpy','valarpy.gists'],
+	packages=['valarpy'],
 	test_suite='tests',
 	classifiers=[
 		"Development Status :: 3 - Alpha",
