@@ -1,59 +1,70 @@
-# valarpy
-Python code to talk to the Kokel Lab database, Valar. Import this into other projects.
+# [valarpy](https://github.com/kokellab/valarpy)
+Python code to talk to the Kokel Lab database, [Valar](https://github.com/kokellab/valar). Import this into other projects.
 
-### Example usage
+### configuration
 
-In this example, the JSON file must contain _host_, _user_, _password_, _db_, and _port_. Example are provided in [`config/connection/`](config/).
-Note that these are currently temporary but real users. It is essential that you _use the lowest-privileged user possible for your need_; in order, these are:
-- [`safe_read_only_user.json`](config/safe_read_only_user.json), _mandolin_ for SELECT only
-- [`user_that_can_update.json`](config/user_that_can_update.json), _bassoon_ for SELECT and UPDATE (useful for changing note, description and comment fields, fixing obvious mistakes, and setting _suspicuous_ flags)
-- [`user_that_can_insert_update_delete.json`](config/user_that_can_insert_update_delete.json), _harp_ for SELECT, UPDATE, INSERT, and DELETE; avoid using if at all possible
+An example configuration file is at [config/example_config.json](config/example_config.json). 
+You'll need to fill in the username and password for the database and SSH connection. In other words, ask Douglas for access. _**Do not** put a username and/or password anywhere that's web-accessible (including Github), with the exception of a password manager with 2-factor authentication._
+
+
+### example usage with Peewee
 
 ```python
-import json
-from valarpy import db
 
-# you MUST do this before importing model
-with open('config/connection.json') as f:
-	db.config = json.load(f)
-from model import *
+import valarpy.global_connection as global_connection
 
-# using the Python Object-Relational Mapping model
-for row in StimulusSources:
-	print(row['name'])
+def do_my_stuff():
+	for row in Users.select():
+		print(row.username)
 
-# using SQL queries directly
-with db.connected():
-	for stim_name in "SELECT name FROM stimulus_sources":
-		print(stim_name)
+with global_connection.GlobalConnection.from_json('../config/real_config.json') as db:
+	db.connect_with_peewee()     # don't worry, this will be closed with the GlobalConnection
+	global_connection.db = db    # set a global variable, which peewee will access
+	from valarpy.model import *  # you MUST import this AFTER setting global_connection.db
+	do_my_stuff()
+```
 
-# another advanced example using SQL
-with db.connected():
-    query = "SELECT name, chemspider_id FROM compounds WHERE compounds.inchikey = %s"
-    for row in db.select(query, 'IAZDPXIOMUYVGZ-UHFFFAOYSA-N'):
-        print(row)
+### example usage with plain SQL
+
+```python
+
+import valarpy.global_connection as global_connection
+
+def do_my_stuff():
+	for row in db.select("SELECT username from users where first_name=%s", 'cole'):
+		print(row)
+
+with global_connection.GlobalConnection.from_json('../config/real_config.json') as db:
+	db.connect_with_raw_sql()
+	global_connection.db = db    # you don't actually need to set this here
+	do_my_stuff()
 ```
 
 See [more examples](https://github.com/kokellab/kokel-scripts) or the [Peewee documentation](http://docs.peewee-orm.com/en/latest/) for further information.
 
-### Installation
+### installation
 
-Locally, which probably isn't needed:
+Install using:
+
+```
+pip install git+https://github.com/kokellab/valarpy.git@0.2#egg=valarpy
+```
+
+Make sure the release (between @ and #) matches what's in [setup.py](setup.py).
+You can also add it to another project's `requirements.txt`:
+
+```
+git+https://github.com/kokellab/valarpy.git@0.2#egg=valarpy
+```
+
+Alternatively, you can install it locally. This probably isn't needed:
 
 ```bash
 pip install --install-option="--prefix=$HOME/.local" .
 ```
 
-From another project in its `requirements.txt`:
 
-```
-git+https://github.com/kokellab/valarpy.git@0.1#egg=valarpy
-```
-
-Make sure the release (between @ and #) matches what's in [setup.py](setup.py).
-
-
-### Generating the Peewee model
+### generating the Peewee model
 
 Use [gen-peewee-model.py](https://github.com/kokellab/kl-tools/blob/master/python/kltools/gen-peewee-model.py):
 

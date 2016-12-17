@@ -1,8 +1,0 @@
-
-{
-  "host": "valinor.ucsf.edu",
-  "user": "mandolin",
-  "password": "TEMP-lute",
-  "port": 3306,
-  "db": "kokel"
-}

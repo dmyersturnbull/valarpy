@@ -1,13 +1,12 @@
 from peewee import *
-from .db import config
-database = MySQLDatabase(config['db'], **{'user': config['user'], 'password': config['password'], 'host': config['host'], 'port': config['port']})
+from valarpy.global_connection import db
 
 class UnknownField(object):
     def __init__(self, *_, **__): pass
 
 class BaseModel(Model):
     class Meta:
-        database = database
+        database = db.peewee_database
 
 class Assays(BaseModel):
     color = CharField()
