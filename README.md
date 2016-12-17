@@ -69,7 +69,9 @@ pip install --install-option="--prefix=$HOME/.local" .
 Use [gen-peewee-model.py](https://github.com/kokellab/kl-tools/blob/master/python/kltools/gen-peewee-model.py):
 
 ```bash
-gen-peewee-model.py --output valarpy/model.py --host valinor.ucsf.edu --schema ../valar/schema.sql --username mandolin --db kokel
+ssh -L 14430:localhost:3306 username@valinor.ucsf.edu
+gen-peewee-model.py --output valarpy/model.py --host 127.0.0.1 --schema ../valar/schema.sql --username username --db kokel --port 14430 --header-file config/header-lines.txt
 ```
 
 This will fix several critical issues that Peewee introduces.
+Fix the indentation to use tabs in an editor before committing the change—otherwise the diff will be hard to read.

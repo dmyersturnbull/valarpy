@@ -1,12 +1,14 @@
 from peewee import *
 from valarpy.global_connection import db
+database = db.peewee_database
+
 
 class UnknownField(object):
 	def __init__(self, *_, **__): pass
 
 class BaseModel(Model):
 	class Meta:
-		database = db.peewee_database
+		database = database
 
 class Assays(BaseModel):
 	color = CharField()
