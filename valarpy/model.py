@@ -85,7 +85,7 @@ class AssaysInProtocols(BaseModel):
     class Meta:
         db_table = 'assays_in_protocols'
         indexes = (
-            (('protocol', 'assay'), True),
+            (('protocol', 'assay', 'start'), True),
         )
 
 class CompoundSources(BaseModel):
@@ -202,7 +202,9 @@ class Experiments(BaseModel):
 class FeatureTypes(BaseModel):
     created = DateTimeField()
     description = CharField()
+    n_bytes_per_value = IntegerField()
     name = CharField(unique=True)
+    tensor_order = IntegerField()
 
     class Meta:
         db_table = 'feature_types'
@@ -241,16 +243,6 @@ class OrderedCompounds(BaseModel):
             (('box_number', 'well_number'), True),
             (('compound', 'batch'), False),
         )
-
-class PlateLayouts(BaseModel):
-    author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
-    created = DateTimeField()
-    description = CharField(null=True)
-    is_template = IntegerField()
-    name = CharField(unique=True)
-
-    class Meta:
-        db_table = 'plate_layouts'
 
 class Plates(BaseModel):
     created = DateTimeField()
@@ -298,6 +290,17 @@ class PlateRuns(BaseModel):
 
     class Meta:
         db_table = 'plate_runs'
+
+class PlateTemplates(BaseModel):
+    author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
+    control_status_expression = CharField()
+    created = DateTimeField()
+    description = CharField(null=True)
+    n_fish_expression = CharField()
+    name = CharField(unique=True)
+
+    class Meta:
+        db_table = 'plate_templates'
 
 class StrainStages(BaseModel):
     generation = IntegerField(null=True)
@@ -409,6 +412,14 @@ class TargetBindingEvents(BaseModel):
             (('source', 'compound', 'target', 'binding_mode'), True),
         )
 
+class TreatmentTemplates(BaseModel):
+    millimolar_dose_expression = CharField()
+    ordered_compound = ForeignKeyField(db_column='ordered_compound_id', rel_model=OrderedCompounds, to_field='id')
+    plate_layout = ForeignKeyField(db_column='plate_layout_id', null=True, rel_model=PlateTemplates, to_field='id')
+
+    class Meta:
+        db_table = 'treatment_templates'
+
 class Treatments(BaseModel):
     micromolar_dose = FloatField(null=True)
     name = CharField(null=True, unique=True)
@@ -456,30 +467,5 @@ class WellFrameImages(BaseModel):
         db_table = 'well_frame_images'
         indexes = (
             (('well', 'frame'), True),
-        )
-
-class WellLayouts(BaseModel):
-    approx_n_fish = IntegerField(null=True)
-    control_status = CharField(null=True)
-    plate_layout = IntegerField(db_column='plate_layout_id', index=True)
-    strain = ForeignKeyField(db_column='strain_id', null=True, rel_model=Strains, to_field='id')
-    well_index = IntegerField()
-
-    class Meta:
-        db_table = 'well_layouts'
-        indexes = (
-            (('plate_layout', 'well_index'), False),
-            (('plate_layout', 'well_index'), True),
-        )
-
-class WellTreatments(BaseModel):
-    treatment = ForeignKeyField(db_column='treatment_id', rel_model=Treatments, to_field='id')
-    well_layout = ForeignKeyField(db_column='well_layout_id', rel_model=WellLayouts, to_field='id')
-
-    class Meta:
-        db_table = 'well_treatments'
-        indexes = (
-            (('well_layout', 'treatment'), False),
-            (('well_layout', 'treatment'), True),
         )
 
