@@ -8,8 +8,6 @@ import contextlib
 import logging
 from typing import Tuple, Iterator, Dict
 
-import valarpy.gists.connected as conned
-
 class Connection:
 
 	_ssh_username = None
