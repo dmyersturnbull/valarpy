@@ -6,5 +6,5 @@
   "db_username": "user",
   "db_password": "password",
   "db_port": 3306,
-  "db_name": "kokel"
+  "db_name": "valar"
 }

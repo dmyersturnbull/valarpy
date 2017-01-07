@@ -54,7 +54,7 @@ Make sure the release (between @ and #) matches what's in [setup.py](setup.py).
 You can also add it to another project's `requirements.txt`:
 
 ```
-git+https://github.com/kokellab/valarpy.git@0.2#egg=valarpy
+git+https://github.com/kokellab/valarpy.git@0.3#egg=valarpy
 ```
 
 Alternatively, you can install it locally. This probably isn't needed:
@@ -70,7 +70,7 @@ Use [gen-peewee-model.py](https://github.com/kokellab/kl-tools/blob/master/pytho
 
 ```bash
 ssh -L 14430:localhost:3306 username@valinor.ucsf.edu
-gen-peewee-model.py --output valarpy/model.py --host 127.0.0.1 --schema ../valar/schema.sql --username username --db kokel --port 14430 --header-file config/header-lines.txt
+gen-peewee-model.py --output valarpy/model.py --host 127.0.0.1 --schema ../valar/schema.sql --username username --db valar --port 14430 --header-file config/header-lines.txt
 ```
 
 This will fix several critical issues that Peewee introduces.

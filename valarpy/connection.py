@@ -23,7 +23,7 @@ class Connection:
 	plain_sql_database = None
 	peewee_database = None
 
-	def __init__(self, ssh_username: str, ssh_password: str, db_username: str, db_password: str, db_name: str='kokel',
+	def __init__(self, ssh_username: str, ssh_password: str, db_username: str, db_password: str, db_name: str='valar',
 				ssh_host: str="localhost", ssh_port: int=22,
 				db_port: int=3306):
 		self._ssh_username = ssh_username
