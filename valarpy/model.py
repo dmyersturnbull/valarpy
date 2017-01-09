@@ -120,7 +120,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(null=True)
 
     class Meta:
@@ -268,29 +268,6 @@ class SauronConfigurations(BaseModel):
     class Meta:
         db_table = 'sauron_configurations'
 
-class PlateRuns(BaseModel):
-    created = DateTimeField()
-    dark_adaptation_time_seconds = IntegerField(null=True)
-    datetime_dosed = DateTimeField(null=True)
-    datetime_run = DateTimeField(null=True)
-    days_post_fertilization = IntegerField(null=True)
-    experimentalist = ForeignKeyField(db_column='experimentalist_id', rel_model=Users, to_field='id')
-    legacy_date_run = DateField(null=True)
-    legacy_incubation_time_minutes = FloatField(null=True)
-    legacy_median_framerate_hertz = FloatField(null=True)
-    legacy_plate_run_name = CharField(unique=True)
-    legacy_treatment_time = TimeField(null=True)
-    matlab_version = CharField(null=True)
-    notes = CharField(null=True)
-    plate = ForeignKeyField(db_column='plate_id', rel_model=Plates, to_field='id')
-    platform = CharField(null=True)
-    sauron_configuration = ForeignKeyField(db_column='sauron_configuration_id', rel_model=SauronConfigurations, to_field='id')
-    sauronx_commit_sha1 = BlobField(null=True)  # auto-corrected to BlobField
-    suspicious = IntegerField()
-
-    class Meta:
-        db_table = 'plate_runs'
-
 class PlateTemplates(BaseModel):
     author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
     control_status_expression = CharField()
@@ -298,9 +275,52 @@ class PlateTemplates(BaseModel):
     description = CharField(null=True)
     n_fish_expression = CharField()
     name = CharField(unique=True)
+    specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
 
     class Meta:
         db_table = 'plate_templates'
+
+class SauronxRuns(BaseModel):
+    created = DateTimeField()
+    dark_adaptation_time_seconds = IntegerField()
+    datetime_dosed = DateTimeField()
+    datetime_fish_plated = DateTimeField()
+    days_post_fertilization = IntegerField(null=True)
+    experiment = ForeignKeyField(db_column='experiment_id', rel_model=Experiments, to_field='id')
+    notes = TextField(null=True)
+    plate = ForeignKeyField(db_column='plate_id', null=True, rel_model=Plates, to_field='id')
+    plate_template = ForeignKeyField(db_column='plate_template_id', rel_model=PlateTemplates, to_field='id')
+    protocol = ForeignKeyField(db_column='protocol_id', rel_model=Protocols, to_field='id')
+    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
+
+    class Meta:
+        db_table = 'sauronx_runs'
+
+class PlateRuns(BaseModel):
+    created = DateTimeField()
+    dark_adaptation_time_seconds = IntegerField(null=True)
+    datetime_dosed = DateTimeField(null=True)
+    datetime_fish_plated = DateTimeField(null=True)
+    datetime_run = DateTimeField(null=True)
+    days_post_fertilization = IntegerField(null=True)
+    experimentalist = ForeignKeyField(db_column='experimentalist_id', rel_model=Users, to_field='id')
+    legacy_date_run = DateField(null=True)
+    legacy_incubation_time_minutes = FloatField(null=True)
+    legacy_median_framerate_hertz = FloatField(null=True)
+    legacy_plate_run_name = CharField(unique=True)
+    matlab_version = CharField(null=True)
+    notes = CharField(null=True)
+    plate = ForeignKeyField(db_column='plate_id', rel_model=Plates, to_field='id')
+    platform = CharField(null=True)
+    sauron_configuration = ForeignKeyField(db_column='sauron_configuration_id', rel_model=SauronConfigurations, to_field='id')
+    sauronx_commit_sha1 = BlobField(null=True)  # auto-corrected to BlobField
+    sauronx_config_toml = IntegerField(db_column='sauronx_config_toml_id', null=True)
+    sauronx_run = ForeignKeyField(db_column='sauronx_run_id', null=True, rel_model=SauronxRuns, to_field='id')
+    suspicious = IntegerField()
+    valar_commit_sha1 = BlobField(null=True)  # auto-corrected to BlobField
+
+    class Meta:
+        db_table = 'plate_runs'
 
 class StrainStages(BaseModel):
     generation = IntegerField(null=True)
@@ -350,6 +370,14 @@ class Rois(BaseModel):
 
     class Meta:
         db_table = 'rois'
+
+class SauronxConfigTomls(BaseModel):
+    created = DateTimeField()
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    toml_text = TextField()
+
+    class Meta:
+        db_table = 'sauronx_config_tomls'
 
 class Sensors(BaseModel):
     blob_type = CharField(null=True)
@@ -449,4 +477,12 @@ class WellFrameImages(BaseModel):
         indexes = (
             (('well', 'frame'), True),
         )
+
+class WellTemplates(BaseModel):
+    compound_dose_expression = CharField()
+    plate_template = ForeignKeyField(db_column='plate_template_id', null=True, rel_model=PlateTemplates, to_field='id')
+    well_range_expression = CharField()
+
+    class Meta:
+        db_table = 'well_templates'
 
