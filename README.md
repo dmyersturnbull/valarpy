@@ -42,19 +42,46 @@ with global_connection.GlobalConnection.from_json('../config/real_config.json') 
 
 See [more examples](https://github.com/kokellab/kokel-scripts) or the [Peewee documentation](http://docs.peewee-orm.com/en/latest/) for further information.
 
+### running in Jupyter notebooks
+
+Jupyter notebooks seem to drop the connection after the first cell. To resolve this, you can avoid using a `with` statement by using:
+
+```python
+
+db = global_connection.GlobalConnection.from_json('/home/dmyerstu/desktop/valar.json')
+db.open()
+db.connect_with_peewee()     # don't worry, this will be closed with the GlobalConnection
+global_connection.db = db    # set a global variable, which peewee will access
+from valarpy.model import *  # you MUST import this AFTER setting global_connection.db
+
+# do whatever till the end of the notebook
+```
+
+The database connection and SSH tunnels will hopefully be closed when Jupyter exits. You can also close bith using `db.close()`.
+
+### notes about tables
+
+Assay frames and features (such as MI) are stored as MySQL binary `blob`s.
+
+Each frame in `assay_frames` is represented as a single big-endian unsigned byte. To convert back, use `utils.blob_to_byte_array(blob)`, where `blob` is the Python `bytes` object returned directly from the database.
+
+Each value in `well_features` (each value is a frame for features like MI) is represented as 4 consecutive bytes that constitute a single big-endian unsigned float (IEEE 754 `binary32`). Use `utils.blob_to_float_array(blob)` to convert back.
+
+There shouldn't be a need to insert these data from Python, so there's no way to convert in the forwards direction.
+
 ### installation
 
 Install using:
 
 ```
-pip install git+https://github.com/kokellab/valarpy.git@0.2#egg=valarpy
+pip install git+https://github.com/kokellab/valarpy.git@0.4.1#egg=valarpy
 ```
 
 Make sure the release (between @ and #) matches what's in [setup.py](setup.py).
 You can also add it to another project's `requirements.txt`:
 
 ```
-git+https://github.com/kokellab/valarpy.git@0.3#egg=valarpy
+git+https://github.com/kokellab/valarpy.git@0.4.1#egg=valarpy
 ```
 
 Alternatively, you can install it locally. This probably isn't needed:
