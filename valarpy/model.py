@@ -281,6 +281,7 @@ class PlateTemplates(BaseModel):
         db_table = 'plate_templates'
 
 class SauronxRuns(BaseModel):
+    id_hash_hex = CharField()
     created = DateTimeField()
     dark_adaptation_time_seconds = IntegerField()
     datetime_dosed = DateTimeField()
