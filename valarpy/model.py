@@ -150,6 +150,9 @@ class CompoundNames(BaseModel):
 
     class Meta:
         db_table = 'compound_names'
+        indexes = (
+            (('compound', 'name', 'data_source'), True),
+        )
 
 class CompoundSources(BaseModel):
     created = DateTimeField()
@@ -247,6 +250,7 @@ class OrderedCompounds(BaseModel):
     solvent = ForeignKeyField(db_column='solvent_id', null=True, rel_model=Compounds, related_name='compounds_solvent_set', to_field='id')
     solvent_notes = TextField(null=True)
     suspicious = IntegerField()
+    unique_hash = CharField(unique=True)
     well_number = IntegerField(null=True)
 
     class Meta:
@@ -325,7 +329,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
