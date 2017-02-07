@@ -1,6 +1,8 @@
 # [valarpy](https://github.com/kokellab/valarpy)
 Python code to talk to the Kokel Lab database, [Valar](https://github.com/kokellab/valar). Import this into other projects.
 
+There is more documentation available in the Valar readme, including an [Entity–Relationship Diagram](https://github.com/kokellab/valar/blob/alttables/docs/erd/valar\_schema.png), where the lines are [foreign keys](https://en.wikipedia.org/wiki/Foreign_key) whose targets are denoted as forks.
+
 ### configuration
 
 An example configuration file is at [config/example_config.json](config/example_config.json). 
