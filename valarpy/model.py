@@ -15,6 +15,7 @@ class Assays(BaseModel):
     description = CharField(null=True)
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
+    length = IntegerField()
     name = CharField(unique=True)
 
     class Meta:
@@ -50,6 +51,7 @@ class Protocols(BaseModel):
     created = DateTimeField()
     description = CharField(null=True)
     hidden = IntegerField()
+    length = IntegerField()
     name = CharField(unique=True)
     notes = CharField(null=True)
     template = ForeignKeyField(db_column='template_id', null=True, rel_model=TemplateProtocols, to_field='id')
@@ -150,9 +152,6 @@ class CompoundNames(BaseModel):
 
     class Meta:
         db_table = 'compound_names'
-        indexes = (
-            (('compound', 'name', 'data_source'), True),
-        )
 
 class CompoundSources(BaseModel):
     created = DateTimeField()
@@ -262,9 +261,11 @@ class OrderedCompounds(BaseModel):
 class Projects(BaseModel):
     created = DateTimeField()
     description = CharField(null=True)
+    methods = TextField(null=True)
     name = CharField(unique=True)
     primary_author = ForeignKeyField(db_column='primary_author_id', null=True, rel_model=Users, to_field='id')
     protocol = ForeignKeyField(db_column='protocol_id', rel_model=Protocols, to_field='id')
+    reason = TextField(null=True)
 
     class Meta:
         db_table = 'projects'
@@ -308,7 +309,6 @@ class TemplatePlates(BaseModel):
         db_table = 'template_plates'
 
 class SauronxSubmissions(BaseModel):
-    id_hash_hex = CharField()
     created = DateTimeField()
     dark_adaptation_time_seconds = IntegerField()
     datetime_dosed = DateTimeField()
@@ -479,7 +479,7 @@ class TemplateWells(BaseModel):
         )
 
 class WellFeatures(BaseModel):
-    floats = BlobField(null=True)  # auto-corrected to BlobField
+    floats = BlobField()  # auto-corrected to BlobField
     lorien_commit_sha1 = BlobField()  # auto-corrected to BlobField
     lorien_config = ForeignKeyField(db_column='lorien_config_id', rel_model=LorienConfigs, to_field='id')
     sha1 = BlobField()  # auto-corrected to BlobField
