@@ -308,6 +308,7 @@ class TemplatePlates(BaseModel):
         db_table = 'template_plates'
 
 class SauronxSubmissions(BaseModel):
+    id_hash_hex = CharField()
     created = DateTimeField()
     dark_adaptation_time_seconds = IntegerField()
     datetime_dosed = DateTimeField()
