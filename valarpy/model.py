@@ -16,7 +16,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
 
     class Meta:
         db_table = 'assays'
@@ -35,7 +35,7 @@ class Users(BaseModel):
     class Meta:
         db_table = 'users'
 
-class TemplateProtocols(BaseModel):
+class TemplateAssays(BaseModel):
     author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
     created = DateTimeField()
     description = CharField(null=True)
@@ -43,7 +43,7 @@ class TemplateProtocols(BaseModel):
     specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
 
     class Meta:
-        db_table = 'template_protocols'
+        db_table = 'template_assays'
 
 class Protocols(BaseModel):
     assays_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
@@ -54,7 +54,7 @@ class Protocols(BaseModel):
     length = IntegerField()
     name = CharField(unique=True)
     notes = CharField(null=True)
-    template = ForeignKeyField(db_column='template_id', null=True, rel_model=TemplateProtocols, to_field='id')
+    template = ForeignKeyField(db_column='template_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
         db_table = 'protocols'
@@ -87,7 +87,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(null=True)
 
     class Meta:
@@ -297,10 +297,8 @@ class SauronConfigs(BaseModel):
 
 class TemplatePlates(BaseModel):
     author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
-    control_status_expression = CharField()
     created = DateTimeField()
     description = CharField(null=True)
-    n_fish_expression = CharField()
     name = CharField(unique=True)
     solvent_dose_type = CharField()
     specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
@@ -454,7 +452,7 @@ class StimulusFrames(BaseModel):
             (('assay', 'stimulus'), True),
         )
 
-class TemplateProtocolParts(BaseModel):
+class TemplateStimulusFrames(BaseModel):
     assay_name = CharField(index=True, null=True)
     author = IntegerField(db_column='author_id', index=True, null=True)
     created = DateTimeField()
@@ -462,21 +460,31 @@ class TemplateProtocolParts(BaseModel):
     start = IntegerField()
     stimulus = ForeignKeyField(db_column='stimulus_id', rel_model=Stimuli, to_field='id')
     stop = IntegerField()
-    template_protocol = ForeignKeyField(db_column='template_protocol_id', rel_model=TemplateProtocols, to_field='id')
+    template_protocol = ForeignKeyField(db_column='template_protocol_id', rel_model=TemplateAssays, to_field='id')
 
     class Meta:
-        db_table = 'template_protocol_parts'
+        db_table = 'template_stimulus_frames'
+
+class TemplateTreatments(BaseModel):
+    dose_expression = CharField()
+    ordered_compound_expression = CharField()
+    template_plate = ForeignKeyField(db_column='template_plate_id', rel_model=TemplatePlates, to_field='id')
+    well_range_expression = CharField()
+
+    class Meta:
+        db_table = 'template_treatments'
+        indexes = (
+            (('template_plate', 'well_range_expression'), True),
+        )
 
 class TemplateWells(BaseModel):
-    compound_dose_expression = CharField()
-    template_plate = ForeignKeyField(db_column='template_plate_id', null=True, rel_model=TemplatePlates, to_field='id')
+    control_status_expression = CharField()
+    fish_variant_expression = CharField()
+    n_fish_expression = CharField()
     well_range_expression = CharField()
 
     class Meta:
         db_table = 'template_wells'
-        indexes = (
-            (('template_plate', 'well_range_expression'), True),
-        )
 
 class WellFeatures(BaseModel):
     floats = BlobField()  # auto-corrected to BlobField
