@@ -45,6 +45,15 @@ class TemplateAssays(BaseModel):
     class Meta:
         db_table = 'template_assays'
 
+class AssayParams(BaseModel):
+    assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
+    name = CharField(null=True)
+    template_assay = ForeignKeyField(db_column='template_assay_id', rel_model=TemplateAssays, to_field='id')
+    value = IntegerField(null=True)
+
+    class Meta:
+        db_table = 'assay_params'
+
 class Protocols(BaseModel):
     assays_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
@@ -87,7 +96,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     serial_number = IntegerField(null=True)
 
     class Meta:
@@ -481,6 +490,7 @@ class TemplateWells(BaseModel):
     control_status_expression = CharField()
     fish_variant_expression = CharField()
     n_fish_expression = CharField()
+    template_plate = ForeignKeyField(db_column='template_plate_id', rel_model=TemplatePlates, to_field='id')
     well_range_expression = CharField()
 
     class Meta:
