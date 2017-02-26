@@ -16,7 +16,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
 
     class Meta:
         db_table = 'assays'
@@ -39,6 +39,7 @@ class TemplateAssays(BaseModel):
     author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
     created = DateTimeField()
     description = CharField(null=True)
+    length = IntegerField()
     name = CharField(unique=True)
     specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
 
@@ -47,9 +48,9 @@ class TemplateAssays(BaseModel):
 
 class AssayParams(BaseModel):
     assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
-    name = CharField(null=True)
+    name = CharField()
     template_assay = ForeignKeyField(db_column='template_assay_id', rel_model=TemplateAssays, to_field='id')
-    value = IntegerField(null=True)
+    value = FloatField()
 
     class Meta:
         db_table = 'assay_params'
@@ -96,7 +97,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(null=True)
 
     class Meta:
@@ -267,14 +268,24 @@ class OrderedCompounds(BaseModel):
             (('box_number', 'well_number'), True),
         )
 
-class Projects(BaseModel):
+class Superprojects(BaseModel):
+    active = IntegerField()
     created = DateTimeField()
     description = CharField(null=True)
     methods = TextField(null=True)
     name = CharField(unique=True)
     primary_author = ForeignKeyField(db_column='primary_author_id', null=True, rel_model=Users, to_field='id')
-    protocol = ForeignKeyField(db_column='protocol_id', rel_model=Protocols, to_field='id')
     reason = TextField(null=True)
+
+    class Meta:
+        db_table = 'superprojects'
+
+class Projects(BaseModel):
+    created = DateTimeField()
+    name = CharField(unique=True)
+    protocol = ForeignKeyField(db_column='protocol_id', rel_model=Protocols, to_field='id')
+    superproject = ForeignKeyField(db_column='superproject_id', null=True, rel_model=Superprojects, to_field='id')
+    template_plate = IntegerField(db_column='template_plate_id', null=True)
 
     class Meta:
         db_table = 'projects'
