@@ -132,7 +132,7 @@ class Compounds(BaseModel):
     chembl = CharField(db_column='chembl_id', null=True, unique=True)
     chemspider = IntegerField(db_column='chemspider_id', null=True)
     created = DateTimeField()
-    inchi = CharField(null=True)
+    inchi = CharField()
     inchikey = CharField(unique=True)
     inchikey_connectivity = CharField(index=True)
     smiles = CharField(null=True)
@@ -170,6 +170,16 @@ class CompoundSources(BaseModel):
 
     class Meta:
         db_table = 'compound_sources'
+
+class ControlTypes(BaseModel):
+    description = CharField()
+    drug_related = IntegerField()
+    genetics_related = IntegerField()
+    name = CharField(unique=True)
+    positive = IntegerField()
+
+    class Meta:
+        db_table = 'control_types'
 
 class Features(BaseModel):
     created = DateTimeField()
@@ -268,6 +278,19 @@ class OrderedCompounds(BaseModel):
             (('box_number', 'well_number'), True),
         )
 
+class PlateTypes(BaseModel):
+    height_millimeters = FloatField(null=True)
+    manufacturer = CharField(null=True)
+    n_columns = IntegerField()
+    n_rows = IntegerField()
+    opacity = CharField()
+    part_number = CharField(null=True)
+    well_shape = CharField()
+    width_millimeters = FloatField(null=True)
+
+    class Meta:
+        db_table = 'plate_types'
+
 class Superprojects(BaseModel):
     active = IntegerField()
     created = DateTimeField()
@@ -282,7 +305,9 @@ class Superprojects(BaseModel):
 
 class Projects(BaseModel):
     created = DateTimeField()
+    description = CharField(null=True)
     name = CharField(unique=True)
+    notes = TextField(null=True)
     protocol = ForeignKeyField(db_column='protocol_id', rel_model=Protocols, to_field='id')
     superproject = ForeignKeyField(db_column='superproject_id', null=True, rel_model=Superprojects, to_field='id')
     template_plate = IntegerField(db_column='template_plate_id', null=True)
@@ -293,6 +318,7 @@ class Projects(BaseModel):
 class Plates(BaseModel):
     created = DateTimeField()
     datetime_fish_plated = DateTimeField(index=True, null=True)
+    plate_type = ForeignKeyField(db_column='plate_type_id', null=True, rel_model=PlateTypes, to_field='id')
     project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
 
     class Meta:
@@ -320,6 +346,7 @@ class TemplatePlates(BaseModel):
     created = DateTimeField()
     description = CharField(null=True)
     name = CharField(unique=True)
+    plate_type = ForeignKeyField(db_column='plate_type_id', null=True, rel_model=PlateTypes, to_field='id')
     solvent_dose_type = CharField()
     specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
 
@@ -356,6 +383,7 @@ class SauronxTomls(BaseModel):
 
 class PlateRuns(BaseModel):
     calculated_mean_framerate = FloatField()
+    concern_level = CharField()
     created = DateTimeField()
     dark_adaptation_seconds = IntegerField(null=True)
     datetime_dosed = DateTimeField(index=True, null=True)
@@ -373,7 +401,6 @@ class PlateRuns(BaseModel):
     sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', null=True, rel_model=SauronxSubmissions, to_field='id')
     sauronx_toml = ForeignKeyField(db_column='sauronx_toml_id', null=True, rel_model=SauronxTomls, to_field='id')
     solvent_notes = CharField(null=True)
-    suspicious = IntegerField()
     valar_commit_sha1 = BlobField(null=True)  # auto-corrected to BlobField
 
     class Meta:
@@ -391,7 +418,7 @@ class ProjectAuthors(BaseModel):
 
 class Wells(BaseModel):
     approx_n_fish = IntegerField(null=True)
-    control_status = CharField(null=True)
+    control_type = ForeignKeyField(db_column='control_type', null=True, rel_model=ControlTypes, to_field='id')
     created = DateTimeField()
     fish_variant = ForeignKeyField(db_column='fish_variant_id', null=True, rel_model=FishVariants, to_field='id')
     plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
@@ -401,7 +428,6 @@ class Wells(BaseModel):
     class Meta:
         db_table = 'wells'
         indexes = (
-            (('plate_run', 'control_status'), False),
             (('plate_run', 'well_index'), True),
         )
 
