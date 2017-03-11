@@ -16,7 +16,8 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
+    template_assay = IntegerField(db_column='template_assay_id', null=True)
 
     class Meta:
         db_table = 'assays'
@@ -39,21 +40,11 @@ class TemplateAssays(BaseModel):
     author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
     created = DateTimeField()
     description = CharField(null=True)
-    length = IntegerField()
     name = CharField(unique=True)
     specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
 
     class Meta:
         db_table = 'template_assays'
-
-class AssayParams(BaseModel):
-    assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
-    name = CharField()
-    template_assay = ForeignKeyField(db_column='template_assay_id', rel_model=TemplateAssays, to_field='id')
-    value = FloatField()
-
-    class Meta:
-        db_table = 'assay_params'
 
 class Protocols(BaseModel):
     assays_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
@@ -341,18 +332,6 @@ class SauronConfigs(BaseModel):
     class Meta:
         db_table = 'sauron_configs'
 
-class TemplatePlates(BaseModel):
-    author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
-    created = DateTimeField()
-    description = CharField(null=True)
-    name = CharField(unique=True)
-    plate_type = ForeignKeyField(db_column='plate_type_id', null=True, rel_model=PlateTypes, to_field='id')
-    solvent_dose_type = CharField()
-    specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
-
-    class Meta:
-        db_table = 'template_plates'
-
 class SauronxSubmissions(BaseModel):
     created = DateTimeField()
     dark_adaptation_time_seconds = IntegerField()
@@ -363,15 +342,10 @@ class SauronxSubmissions(BaseModel):
     notes = TextField(null=True)
     plate = ForeignKeyField(db_column='plate_id', null=True, rel_model=Plates, to_field='id')
     project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
-    protocol = ForeignKeyField(db_column='protocol_id', rel_model=Protocols, to_field='id')
-    template_plate = ForeignKeyField(db_column='template_plate_id', rel_model=TemplatePlates, to_field='id')
     user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
 
     class Meta:
         db_table = 'sauronx_submissions'
-        indexes = (
-            (('protocol', 'template_plate'), False),
-        )
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
@@ -416,6 +390,18 @@ class ProjectAuthors(BaseModel):
             (('project', 'user'), True),
         )
 
+class ProtocolParams(BaseModel):
+    name = CharField()
+    protocol = ForeignKeyField(db_column='protocol_id', rel_model=Protocols, to_field='id')
+    template_assay = ForeignKeyField(db_column='template_assay_id', rel_model=TemplateAssays, to_field='id')
+    value = FloatField()
+
+    class Meta:
+        db_table = 'protocol_params'
+        indexes = (
+            (('protocol', 'name'), True),
+        )
+
 class Wells(BaseModel):
     approx_n_fish = IntegerField(null=True)
     control_type = ForeignKeyField(db_column='control_type', null=True, rel_model=ControlTypes, to_field='id')
@@ -445,6 +431,7 @@ class Rois(BaseModel):
 
 class SauronxSubmissionParams(BaseModel):
     name = CharField()
+    param_type = CharField()
     sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', rel_model=SauronxSubmissions, to_field='id')
     value = CharField()
 
@@ -498,15 +485,23 @@ class StimulusFrames(BaseModel):
             (('assay', 'stimulus'), True),
         )
 
-class TemplateStimulusFrames(BaseModel):
-    assay_name = CharField(index=True, null=True)
-    author = IntegerField(db_column='author_id', index=True, null=True)
+class TemplatePlates(BaseModel):
+    author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
     created = DateTimeField()
-    expression = CharField()
-    start = IntegerField()
+    description = CharField(null=True)
+    name = CharField(unique=True)
+    plate_type = ForeignKeyField(db_column='plate_type_id', null=True, rel_model=PlateTypes, to_field='id')
+    solvent_dose_type = CharField()
+    specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
+
+    class Meta:
+        db_table = 'template_plates'
+
+class TemplateStimulusFrames(BaseModel):
+    range_expression = CharField()
     stimulus = ForeignKeyField(db_column='stimulus_id', rel_model=Stimuli, to_field='id')
-    stop = IntegerField()
-    template_protocol = ForeignKeyField(db_column='template_protocol_id', rel_model=TemplateAssays, to_field='id')
+    template_assay = ForeignKeyField(db_column='template_assay_id', rel_model=TemplateAssays, to_field='id')
+    value_expression = CharField()
 
     class Meta:
         db_table = 'template_stimulus_frames'
