@@ -16,13 +16,24 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     template_assay = IntegerField(db_column='template_assay_id', null=True)
 
     class Meta:
         db_table = 'assays'
         indexes = (
             (('name', 'frames_sha1'), True),
+        )
+
+class AssayParams(BaseModel):
+    assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
+    name = CharField()
+    value = FloatField()
+
+    class Meta:
+        db_table = 'assay_params'
+        indexes = (
+            (('name', 'assay'), True),
         )
 
 class Users(BaseModel):
@@ -349,7 +360,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -388,18 +399,6 @@ class ProjectAuthors(BaseModel):
         db_table = 'project_authors'
         indexes = (
             (('project', 'user'), True),
-        )
-
-class ProtocolParams(BaseModel):
-    name = CharField()
-    protocol = ForeignKeyField(db_column='protocol_id', rel_model=Protocols, to_field='id')
-    template_assay = ForeignKeyField(db_column='template_assay_id', rel_model=TemplateAssays, to_field='id')
-    value = FloatField()
-
-    class Meta:
-        db_table = 'protocol_params'
-        indexes = (
-            (('protocol', 'name'), True),
         )
 
 class Wells(BaseModel):
@@ -486,11 +485,11 @@ class StimulusFrames(BaseModel):
         )
 
 class TemplatePlates(BaseModel):
-    author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
+    author = ForeignKeyField(db_column='author_id', rel_model=Users, to_field='id')
     created = DateTimeField()
     description = CharField(null=True)
     name = CharField(unique=True)
-    plate_type = ForeignKeyField(db_column='plate_type_id', null=True, rel_model=PlateTypes, to_field='id')
+    plate_type = ForeignKeyField(db_column='plate_type_id', rel_model=PlateTypes, to_field='id')
     solvent_dose_type = CharField()
     specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
 
