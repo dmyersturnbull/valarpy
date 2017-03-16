@@ -160,7 +160,7 @@ class CompoundNames(BaseModel):
     compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
     created = DateTimeField()
     data_source = ForeignKeyField(db_column='data_source_id', rel_model=DataSources, to_field='id')
-    name = CharField(index=True)
+    name = CharField()
 
     class Meta:
         db_table = 'compound_names'
@@ -390,16 +390,6 @@ class PlateRuns(BaseModel):
 
     class Meta:
         db_table = 'plate_runs'
-
-class ProjectAuthors(BaseModel):
-    project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
-    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
-
-    class Meta:
-        db_table = 'project_authors'
-        indexes = (
-            (('project', 'user'), True),
-        )
 
 class Wells(BaseModel):
     approx_n_fish = IntegerField(null=True)
