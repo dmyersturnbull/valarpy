@@ -198,11 +198,8 @@ class FishVariants(BaseModel):
     creator = ForeignKeyField(db_column='creator_id', null=True, rel_model=Users, to_field='id')
     date_created = DateField(null=True)
     father_fish_variant = ForeignKeyField(db_column='father_fish_variant_id', null=True, rel_model='self', to_field='id')
-    father_fish_variant_name = CharField(null=True)
-    generation = IntegerField(null=True)
-    genetics_type = CharField(null=True)
+    lineage_type = CharField(null=True)
     mother_fish_variant = ForeignKeyField(db_column='mother_fish_variant_id', null=True, rel_model='self', related_name='fish_variants_mother_fish_variant_set', to_field='id')
-    mother_fish_variant_name = CharField(null=True)
     name = CharField(unique=True)
     notes = CharField(null=True)
     zfin_gene_injection = CharField(null=True)
@@ -368,7 +365,7 @@ class SauronxTomls(BaseModel):
 
 class PlateRuns(BaseModel):
     calculated_mean_framerate = FloatField()
-    concern_level = CharField()
+    concern_level = CharField(null=True)
     created = DateTimeField()
     dark_adaptation_seconds = IntegerField(null=True)
     datetime_dosed = DateTimeField(index=True, null=True)
