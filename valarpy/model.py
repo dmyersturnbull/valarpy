@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     serial_number = IntegerField(null=True)
 
     class Meta:
@@ -129,153 +129,6 @@ class CameraConfigs(BaseModel):
 
     class Meta:
         db_table = 'camera_configs'
-
-class Compounds(BaseModel):
-    chembl = CharField(db_column='chembl_id', null=True, unique=True)
-    chemspider = IntegerField(db_column='chemspider_id', null=True)
-    created = DateTimeField()
-    inchi = CharField()
-    inchikey = CharField(unique=True)
-    inchikey_connectivity = CharField(index=True)
-    smiles = CharField(null=True)
-
-    class Meta:
-        db_table = 'compounds'
-
-class DataSources(BaseModel):
-    created = DateTimeField()
-    date_time_downloaded = DateTimeField(null=True)
-    description = CharField(null=True)
-    external_version = CharField(null=True)
-    name = CharField(index=True)
-    url = CharField(null=True)
-
-    class Meta:
-        db_table = 'data_sources'
-        indexes = (
-            (('name', 'external_version'), True),
-        )
-
-class CompoundNames(BaseModel):
-    compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
-    created = DateTimeField()
-    data_source = ForeignKeyField(db_column='data_source_id', rel_model=DataSources, to_field='id')
-    name = CharField()
-
-    class Meta:
-        db_table = 'compound_names'
-
-class CompoundSources(BaseModel):
-    created = DateTimeField()
-    description = CharField(null=True)
-    name = CharField(unique=True)
-
-    class Meta:
-        db_table = 'compound_sources'
-
-class ControlTypes(BaseModel):
-    description = CharField()
-    drug_related = IntegerField()
-    genetics_related = IntegerField()
-    name = CharField(unique=True)
-    positive = IntegerField()
-
-    class Meta:
-        db_table = 'control_types'
-
-class Features(BaseModel):
-    created = DateTimeField()
-    data_type = CharField()
-    description = CharField()
-    name = CharField(unique=True)
-    tensor_order = IntegerField()
-
-    class Meta:
-        db_table = 'features'
-
-class FishVariants(BaseModel):
-    created = DateTimeField()
-    creator = ForeignKeyField(db_column='creator_id', null=True, rel_model=Users, to_field='id')
-    date_created = DateField(null=True)
-    father_fish_variant = ForeignKeyField(db_column='father_fish_variant_id', null=True, rel_model='self', to_field='id')
-    lineage_type = CharField(null=True)
-    mother_fish_variant = ForeignKeyField(db_column='mother_fish_variant_id', null=True, rel_model='self', related_name='fish_variants_mother_fish_variant_set', to_field='id')
-    name = CharField(unique=True)
-    notes = CharField(null=True)
-    zfin_gene_injection = CharField(null=True)
-
-    class Meta:
-        db_table = 'fish_variants'
-
-class HeronBindingModes(BaseModel):
-    created = DateTimeField()
-    name = CharField(unique=True)
-
-    class Meta:
-        db_table = 'heron_binding_modes'
-
-class HeronTargets(BaseModel):
-    external = CharField(db_column='external_id')
-    external_source = ForeignKeyField(db_column='external_source_id', rel_model=DataSources, to_field='id')
-    hgnc_gene_symbol = CharField(index=True, null=True)
-
-    class Meta:
-        db_table = 'heron_targets'
-        indexes = (
-            (('external_source', 'external'), True),
-        )
-
-class HeronBindings(BaseModel):
-    affinity = FloatField(null=True)
-    binding_mode = ForeignKeyField(db_column='binding_mode_id', null=True, rel_model=HeronBindingModes, to_field='id')
-    compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
-    external_source = ForeignKeyField(db_column='external_source_id', rel_model=DataSources, to_field='id')
-    target = ForeignKeyField(db_column='target_id', rel_model=HeronTargets, to_field='id')
-
-    class Meta:
-        db_table = 'heron_bindings'
-        indexes = (
-            (('compound', 'target'), False),
-            (('compound', 'target', 'binding_mode'), False),
-            (('compound', 'target', 'external_source'), False),
-            (('compound', 'target', 'external_source', 'binding_mode'), False),
-            (('external_source', 'compound', 'target', 'binding_mode'), True),
-        )
-
-class LorienConfigs(BaseModel):
-    created = DateTimeField()
-    notes = CharField(null=True)
-
-    class Meta:
-        db_table = 'lorien_configs'
-
-class OrderedCompounds(BaseModel):
-    box_number = IntegerField(null=True)
-    compound = ForeignKeyField(db_column='compound_id', null=True, rel_model=Compounds, to_field='id')
-    compound_source = ForeignKeyField(db_column='compound_source_id', null=True, rel_model=CompoundSources, to_field='id')
-    concentration_millimolar = FloatField(null=True)
-    created = DateTimeField()
-    data_source = ForeignKeyField(db_column='data_source_id', null=True, rel_model=DataSources, to_field='id')
-    date_ordered = DateField(null=True)
-    external = CharField(db_column='external_id', null=True)
-    legacy_internal = CharField(db_column='legacy_internal_id', index=True, null=True)
-    mechanism_target_notes = TextField(null=True)
-    molecular_weight = FloatField(null=True)
-    notes = TextField(null=True)
-    person_ordered = ForeignKeyField(db_column='person_ordered', null=True, rel_model=Users, to_field='id')
-    powder_location = TextField(null=True)
-    reason_ordered = TextField(null=True)
-    solvent = ForeignKeyField(db_column='solvent_id', null=True, rel_model=Compounds, related_name='compounds_solvent_set', to_field='id')
-    solvent_notes = TextField(null=True)
-    suspicious = IntegerField()
-    unique_hash = CharField(unique=True)
-    well_number = IntegerField(null=True)
-
-    class Meta:
-        db_table = 'ordered_compounds'
-        indexes = (
-            (('box_number', 'well_number'), True),
-        )
 
 class PlateTypes(BaseModel):
     height_millimeters = FloatField(null=True)
@@ -387,6 +240,245 @@ class PlateRuns(BaseModel):
 
     class Meta:
         db_table = 'plate_runs'
+
+class CarpDataTasks(BaseModel):
+    description = TextField(null=True)
+    name = CharField()
+    task = IntegerField(db_column='task_id')
+
+    class Meta:
+        db_table = 'carp_data_tasks'
+        indexes = (
+            (('name', 'task'), True),
+        )
+
+class CarpTasks(BaseModel):
+    days_to_wait = IntegerField(null=True)
+    description = TextField(null=True)
+    failure_condition = CharField(null=True)
+    failure_target = ForeignKeyField(db_column='failure_target_id', null=True, rel_model='self', to_field='id')
+    name = CharField(unique=True)
+    notes = TextField(null=True)
+    project_type = CharField(null=True)
+    success_condition = CharField(null=True)
+    success_target = ForeignKeyField(db_column='success_target_id', null=True, rel_model='self', related_name='carp_tasks_success_target_set', to_field='id')
+
+    class Meta:
+        db_table = 'carp_tasks'
+
+class CarpTanks(BaseModel):
+    created = DateTimeField()
+    datetime_died = DateTimeField(null=True)
+    internal = IntegerField(db_column='internal_id', unique=True)
+    is_alive = IntegerField()
+    name = CharField(unique=True)
+    notes = TextField(null=True)
+    project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
+    task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
+
+    class Meta:
+        db_table = 'carp_tanks'
+
+class CarpData(BaseModel):
+    created = DateTimeField()
+    data_task = ForeignKeyField(db_column='data_task_id', rel_model=CarpDataTasks, to_field='id')
+    external_uri = TextField(null=True)
+    father_tank = ForeignKeyField(db_column='father_tank', rel_model=CarpTanks, to_field='id')
+    file_blob = TextField(null=True)
+    file_blob_sha1 = CharField(null=True)
+    mother_tank = ForeignKeyField(db_column='mother_tank', rel_model=CarpTanks, related_name='carp_tanks_mother_tank_set', to_field='id')
+    notes = TextField(null=True)
+    plate_run = ForeignKeyField(db_column='plate_run_id', null=True, rel_model=PlateRuns, to_field='id')
+
+    class Meta:
+        db_table = 'carp_data'
+
+class CarpDataTypes(BaseModel):
+    description = TextField(null=True)
+    name = CharField(unique=True)
+
+    class Meta:
+        db_table = 'carp_data_types'
+
+class CarpProjects(BaseModel):
+    ancestor = ForeignKeyField(db_column='ancestor_id', null=True, rel_model='self', to_field='id')
+    created = DateTimeField()
+    current_notes = TextField(null=True)
+    current_task = ForeignKeyField(db_column='current_task', null=True, rel_model=CarpTasks, to_field='id')
+    description = TextField(null=True)
+    modified = DateTimeField()
+    name = CharField(unique=True)
+    owner = ForeignKeyField(db_column='owner_id', null=True, rel_model=Users, to_field='id')
+    project_type = CharField(null=True)
+
+    class Meta:
+        db_table = 'carp_projects'
+
+class CarpTaskHistory(BaseModel):
+    created = DateTimeField()
+    project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
+    success = IntegerField()
+    task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
+
+    class Meta:
+        db_table = 'carp_task_history'
+
+class Compounds(BaseModel):
+    chembl = CharField(db_column='chembl_id', null=True, unique=True)
+    chemspider = IntegerField(db_column='chemspider_id', null=True)
+    created = DateTimeField()
+    inchi = CharField()
+    inchikey = CharField(unique=True)
+    inchikey_connectivity = CharField(index=True)
+    smiles = CharField(null=True)
+
+    class Meta:
+        db_table = 'compounds'
+
+class DataSources(BaseModel):
+    created = DateTimeField()
+    date_time_downloaded = DateTimeField(null=True)
+    description = CharField(null=True)
+    external_version = CharField(null=True)
+    name = CharField(index=True)
+    url = CharField(null=True)
+
+    class Meta:
+        db_table = 'data_sources'
+        indexes = (
+            (('name', 'external_version'), True),
+        )
+
+class CompoundNames(BaseModel):
+    compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
+    created = DateTimeField()
+    data_source = ForeignKeyField(db_column='data_source_id', rel_model=DataSources, to_field='id')
+    name = CharField()
+
+    class Meta:
+        db_table = 'compound_names'
+
+class CompoundSources(BaseModel):
+    created = DateTimeField()
+    description = CharField(null=True)
+    name = CharField(unique=True)
+
+    class Meta:
+        db_table = 'compound_sources'
+
+class ControlTypes(BaseModel):
+    description = CharField()
+    drug_related = IntegerField()
+    genetics_related = IntegerField()
+    name = CharField(unique=True)
+    positive = IntegerField()
+
+    class Meta:
+        db_table = 'control_types'
+
+class Features(BaseModel):
+    created = DateTimeField()
+    data_type = CharField()
+    description = CharField()
+    name = CharField(unique=True)
+    tensor_order = IntegerField()
+
+    class Meta:
+        db_table = 'features'
+
+class FishVariants(BaseModel):
+    created = DateTimeField()
+    creator = ForeignKeyField(db_column='creator_id', null=True, rel_model=Users, to_field='id')
+    date_created = DateField(null=True)
+    father_fish_variant = ForeignKeyField(db_column='father_fish_variant_id', null=True, rel_model='self', to_field='id')
+    lineage_type = CharField(null=True)
+    mother_fish_variant = ForeignKeyField(db_column='mother_fish_variant_id', null=True, rel_model='self', related_name='fish_variants_mother_fish_variant_set', to_field='id')
+    name = CharField(unique=True)
+    notes = CharField(null=True)
+
+    class Meta:
+        db_table = 'fish_variants'
+
+class HeronBindingModes(BaseModel):
+    created = DateTimeField()
+    name = CharField(unique=True)
+
+    class Meta:
+        db_table = 'heron_binding_modes'
+
+class HeronTargets(BaseModel):
+    external = CharField(db_column='external_id')
+    external_source = ForeignKeyField(db_column='external_source_id', rel_model=DataSources, to_field='id')
+    hgnc_gene_symbol = CharField(index=True, null=True)
+
+    class Meta:
+        db_table = 'heron_targets'
+        indexes = (
+            (('external_source', 'external'), True),
+        )
+
+class HeronBindings(BaseModel):
+    affinity = FloatField(null=True)
+    binding_mode = ForeignKeyField(db_column='binding_mode_id', null=True, rel_model=HeronBindingModes, to_field='id')
+    compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
+    external_source = ForeignKeyField(db_column='external_source_id', rel_model=DataSources, to_field='id')
+    target = ForeignKeyField(db_column='target_id', rel_model=HeronTargets, to_field='id')
+
+    class Meta:
+        db_table = 'heron_bindings'
+        indexes = (
+            (('compound', 'target'), False),
+            (('compound', 'target', 'binding_mode'), False),
+            (('compound', 'target', 'external_source'), False),
+            (('compound', 'target', 'external_source', 'binding_mode'), False),
+            (('external_source', 'compound', 'target', 'binding_mode'), True),
+        )
+
+class LorienConfigs(BaseModel):
+    created = DateTimeField()
+    notes = CharField(null=True)
+
+    class Meta:
+        db_table = 'lorien_configs'
+
+class Mutations(BaseModel):
+    affects_endogenous_zfin = CharField(db_column='affects_endogenous_zfin_id', null=True)
+    created = DateTimeField()
+    description = CharField(null=True)
+    fish_variant = ForeignKeyField(db_column='fish_variant_id', null=True, rel_model=FishVariants, to_field='id')
+    knockin_of_uniprot = CharField(db_column='knockin_of_uniprot_id', null=True)
+    plasmid = IntegerField(db_column='plasmid_id', null=True)
+
+    class Meta:
+        db_table = 'mutations'
+
+class OrderedCompounds(BaseModel):
+    box_number = IntegerField(null=True)
+    compound = ForeignKeyField(db_column='compound_id', null=True, rel_model=Compounds, to_field='id')
+    compound_source = ForeignKeyField(db_column='compound_source_id', null=True, rel_model=CompoundSources, to_field='id')
+    concentration_millimolar = FloatField(null=True)
+    created = DateTimeField()
+    data_source = ForeignKeyField(db_column='data_source_id', null=True, rel_model=DataSources, to_field='id')
+    date_ordered = DateField(null=True)
+    external = CharField(db_column='external_id', null=True)
+    legacy_internal = CharField(db_column='legacy_internal_id', index=True, null=True)
+    mechanism_target_notes = TextField(null=True)
+    molecular_weight = FloatField(null=True)
+    notes = TextField(null=True)
+    person_ordered = ForeignKeyField(db_column='person_ordered', null=True, rel_model=Users, to_field='id')
+    powder_location = TextField(null=True)
+    reason_ordered = TextField(null=True)
+    solvent = ForeignKeyField(db_column='solvent_id', null=True, rel_model=Compounds, related_name='compounds_solvent_set', to_field='id')
+    solvent_notes = TextField(null=True)
+    suspicious = IntegerField()
+    unique_hash = CharField(unique=True)
+    well_number = IntegerField(null=True)
+
+    class Meta:
+        db_table = 'ordered_compounds'
+        indexes = (
+            (('box_number', 'well_number'), True),
+        )
 
 class Wells(BaseModel):
     approx_n_fish = IntegerField(null=True)
