@@ -155,6 +155,18 @@ class Superprojects(BaseModel):
     class Meta:
         db_table = 'superprojects'
 
+class TemplatePlates(BaseModel):
+    author = ForeignKeyField(db_column='author_id', rel_model=Users, to_field='id')
+    created = DateTimeField()
+    description = CharField(null=True)
+    name = CharField(unique=True)
+    plate_type = ForeignKeyField(db_column='plate_type_id', rel_model=PlateTypes, to_field='id')
+    solvent_dose_type = CharField()
+    specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
+
+    class Meta:
+        db_table = 'template_plates'
+
 class Projects(BaseModel):
     created = DateTimeField()
     description = CharField(null=True)
@@ -162,7 +174,7 @@ class Projects(BaseModel):
     notes = TextField(null=True)
     protocol = ForeignKeyField(db_column='protocol_id', rel_model=Protocols, to_field='id')
     superproject = ForeignKeyField(db_column='superproject_id', null=True, rel_model=Superprojects, to_field='id')
-    template_plate = IntegerField(db_column='template_plate_id', null=True)
+    template_plate = ForeignKeyField(db_column='template_plate_id', null=True, rel_model=TemplatePlates, to_field='id')
 
     class Meta:
         db_table = 'projects'
@@ -241,7 +253,15 @@ class PlateRuns(BaseModel):
     class Meta:
         db_table = 'plate_runs'
 
+class CarpDataTypes(BaseModel):
+    description = TextField(null=True)
+    name = CharField(unique=True)
+
+    class Meta:
+        db_table = 'carp_data_types'
+
 class CarpDataTasks(BaseModel):
+    data_type_produced = ForeignKeyField(db_column='data_type_produced', rel_model=CarpDataTypes, to_field='id')
     description = TextField(null=True)
     name = CharField()
     task = IntegerField(db_column='task_id')
@@ -292,13 +312,6 @@ class CarpData(BaseModel):
 
     class Meta:
         db_table = 'carp_data'
-
-class CarpDataTypes(BaseModel):
-    description = TextField(null=True)
-    name = CharField(unique=True)
-
-    class Meta:
-        db_table = 'carp_data_types'
 
 class CarpProjects(BaseModel):
     ancestor = ForeignKeyField(db_column='ancestor_id', null=True, rel_model='self', to_field='id')
@@ -452,6 +465,15 @@ class Mutations(BaseModel):
     class Meta:
         db_table = 'mutations'
 
+class Oligos(BaseModel):
+    created = DateTimeField()
+    sequence = TextField()
+    target_ebi = CharField(db_column='target_ebi_id', null=True)
+    used_for = TextField()
+
+    class Meta:
+        db_table = 'oligos'
+
 class OrderedCompounds(BaseModel):
     box_number = IntegerField(null=True)
     compound = ForeignKeyField(db_column='compound_id', null=True, rel_model=Compounds, to_field='id')
@@ -562,18 +584,6 @@ class StimulusFrames(BaseModel):
         indexes = (
             (('assay', 'stimulus'), True),
         )
-
-class TemplatePlates(BaseModel):
-    author = ForeignKeyField(db_column='author_id', rel_model=Users, to_field='id')
-    created = DateTimeField()
-    description = CharField(null=True)
-    name = CharField(unique=True)
-    plate_type = ForeignKeyField(db_column='plate_type_id', rel_model=PlateTypes, to_field='id')
-    solvent_dose_type = CharField()
-    specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
-
-    class Meta:
-        db_table = 'template_plates'
 
 class TemplateStimulusFrames(BaseModel):
     range_expression = CharField()
