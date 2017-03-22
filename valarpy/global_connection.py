@@ -6,7 +6,7 @@ import logging
 from typing import Dict
 from valarpy.connection import Connection
 
-_valar_config_var = 'VALAR_CONFIG'
+_valar_config_var = 'VALARPY_CONFIG'
 
 db = None
 
