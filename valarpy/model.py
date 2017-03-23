@@ -16,7 +16,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     template_assay = IntegerField(db_column='template_assay_id', null=True)
 
     class Meta:
@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(null=True)
 
     class Meta:
@@ -253,6 +253,20 @@ class PlateRuns(BaseModel):
     class Meta:
         db_table = 'plate_runs'
 
+class CarpTasks(BaseModel):
+    days_to_wait = IntegerField(null=True)
+    description = TextField(null=True)
+    failure_condition = CharField(null=True)
+    failure_target = ForeignKeyField(db_column='failure_target_id', null=True, rel_model='self', to_field='id')
+    name = CharField(unique=True)
+    notes = TextField(null=True)
+    project_type = CharField(index=True, null=True)
+    success_condition = CharField(null=True)
+    success_target = ForeignKeyField(db_column='success_target_id', null=True, rel_model='self', related_name='carp_tasks_success_target_set', to_field='id')
+
+    class Meta:
+        db_table = 'carp_tasks'
+
 class CarpDataTypes(BaseModel):
     description = TextField(null=True)
     name = CharField(unique=True)
@@ -264,27 +278,13 @@ class CarpDataTasks(BaseModel):
     data_type_produced = ForeignKeyField(db_column='data_type_produced', rel_model=CarpDataTypes, to_field='id')
     description = TextField(null=True)
     name = CharField()
-    task = IntegerField(db_column='task_id')
+    task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
 
     class Meta:
         db_table = 'carp_data_tasks'
         indexes = (
             (('name', 'task'), True),
         )
-
-class CarpTasks(BaseModel):
-    days_to_wait = IntegerField(null=True)
-    description = TextField(null=True)
-    failure_condition = CharField(null=True)
-    failure_target = ForeignKeyField(db_column='failure_target_id', null=True, rel_model='self', to_field='id')
-    name = CharField(unique=True)
-    notes = TextField(null=True)
-    project_type = CharField(null=True)
-    success_condition = CharField(null=True)
-    success_target = ForeignKeyField(db_column='success_target_id', null=True, rel_model='self', related_name='carp_tasks_success_target_set', to_field='id')
-
-    class Meta:
-        db_table = 'carp_tasks'
 
 class CarpTanks(BaseModel):
     created = DateTimeField()
@@ -305,9 +305,10 @@ class CarpData(BaseModel):
     external_uri = TextField(null=True)
     father_tank = ForeignKeyField(db_column='father_tank', rel_model=CarpTanks, to_field='id')
     file_blob = TextField(null=True)
-    file_blob_sha1 = CharField(null=True)
+    file_blob_sha1 = CharField(index=True, null=True)
     mother_tank = ForeignKeyField(db_column='mother_tank', rel_model=CarpTanks, related_name='carp_tanks_mother_tank_set', to_field='id')
     notes = TextField(null=True)
+    person_collected = ForeignKeyField(db_column='person_collected', rel_model=Users, to_field='id')
     plate_run = ForeignKeyField(db_column='plate_run_id', null=True, rel_model=PlateRuns, to_field='id')
 
     class Meta:
@@ -322,10 +323,22 @@ class CarpProjects(BaseModel):
     modified = DateTimeField()
     name = CharField(unique=True)
     owner = ForeignKeyField(db_column='owner_id', null=True, rel_model=Users, to_field='id')
-    project_type = CharField(null=True)
+    project_type = CharField(index=True, null=True)
 
     class Meta:
         db_table = 'carp_projects'
+
+class CarpTankHistory(BaseModel):
+    created = DateTimeField()
+    date_scanned = DateField(index=True)
+    dead_fish = IntegerField()
+    location = CharField(null=True)
+    n_fish = IntegerField()
+    person_scanned = ForeignKeyField(db_column='person_scanned', rel_model=Users, to_field='id')
+    tank = ForeignKeyField(db_column='tank_id', rel_model=CarpTanks, to_field='id')
+
+    class Meta:
+        db_table = 'carp_tank_history'
 
 class CarpTaskHistory(BaseModel):
     created = DateTimeField()
@@ -607,7 +620,7 @@ class TemplateTreatments(BaseModel):
         )
 
 class TemplateWells(BaseModel):
-    control_status_expression = CharField()
+    control_type = ForeignKeyField(db_column='control_type', null=True, rel_model=ControlTypes, to_field='id')
     fish_variant_expression = CharField()
     n_fish_expression = CharField()
     template_plate = ForeignKeyField(db_column='template_plate_id', rel_model=TemplatePlates, to_field='id')
