@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     serial_number = IntegerField(null=True)
 
     class Meta:
@@ -304,8 +304,8 @@ class CarpData(BaseModel):
     data_task = ForeignKeyField(db_column='data_task_id', rel_model=CarpDataTasks, to_field='id')
     external_uri = TextField(null=True)
     father_tank = ForeignKeyField(db_column='father_tank', rel_model=CarpTanks, to_field='id')
-    file_blob = TextField(null=True)
-    file_blob_sha1 = CharField(index=True, null=True)
+    file_blob = BlobField(null=True)  # auto-corrected to BlobField
+    file_blob_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
     mother_tank = ForeignKeyField(db_column='mother_tank', rel_model=CarpTanks, related_name='carp_tanks_mother_tank_set', to_field='id')
     notes = TextField(null=True)
     person_collected = ForeignKeyField(db_column='person_collected', rel_model=Users, to_field='id')
