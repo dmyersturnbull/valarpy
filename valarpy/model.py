@@ -16,7 +16,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     template_assay = IntegerField(db_column='template_assay_id', null=True)
 
     class Meta:
@@ -85,8 +85,8 @@ class AssaysInProtocols(BaseModel):
 class AudioFiles(BaseModel):
     created = DateTimeField()
     creator = ForeignKeyField(db_column='creator_id', null=True, rel_model=Users, to_field='id')
+    data = BlobField()  # auto-corrected to BlobField
     filename = CharField(unique=True)
-    mp3 = BlobField()  # auto-corrected to BlobField
     n_seconds = FloatField()
     notes = CharField(null=True)
     sha1 = BlobField(unique=True)  # auto-corrected to BlobField
@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(null=True)
 
     class Meta:
@@ -199,6 +199,7 @@ class Saurons(BaseModel):
 class SauronConfigs(BaseModel):
     camera_config = ForeignKeyField(db_column='camera_config_id', null=True, rel_model=CameraConfigs, to_field='id')
     created = DateTimeField()
+    datetime_changed = DateTimeField()
     description = TextField()
     sauron = ForeignKeyField(db_column='sauron_id', rel_model=Saurons, to_field='id')
 
