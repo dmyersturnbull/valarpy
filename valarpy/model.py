@@ -16,7 +16,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     template_assay = IntegerField(db_column='template_assay_id', null=True)
 
     class Meta:
@@ -39,10 +39,10 @@ class AssayParams(BaseModel):
 class Users(BaseModel):
     bcrypt_hash = CharField(index=True, null=True)
     created = DateTimeField()
-    first_name = CharField()
-    last_name = CharField()
+    first_name = CharField(index=True)
+    last_name = CharField(index=True)
     username = CharField(unique=True)
-    write_access = IntegerField()
+    write_access = IntegerField(index=True)
 
     class Meta:
         db_table = 'users'
@@ -63,7 +63,7 @@ class Protocols(BaseModel):
     created = DateTimeField()
     description = CharField(null=True)
     hidden = IntegerField()
-    length = IntegerField()
+    length = IntegerField(index=True)
     name = CharField(unique=True)
     notes = CharField(null=True)
     template = ForeignKeyField(db_column='template_id', null=True, rel_model=TemplateAssays, to_field='id')
@@ -74,7 +74,7 @@ class Protocols(BaseModel):
 class AssaysInProtocols(BaseModel):
     assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
     protocol = ForeignKeyField(db_column='protocol_id', rel_model=Protocols, to_field='id')
-    start = IntegerField()
+    start = IntegerField(index=True)
 
     class Meta:
         db_table = 'assays_in_protocols'
@@ -100,7 +100,7 @@ class Cameras(BaseModel):
     description = TextField(null=True)
     model = CharField()
     name = CharField(index=True)
-    serial_number = IntegerField(null=True)
+    serial_number = IntegerField(index=True, null=True)
 
     class Meta:
         db_table = 'cameras'
@@ -142,6 +142,10 @@ class PlateTypes(BaseModel):
 
     class Meta:
         db_table = 'plate_types'
+        indexes = (
+            (('manufacturer', 'part_number'), False),
+            (('n_rows', 'n_columns'), False),
+        )
 
 class Superprojects(BaseModel):
     active = IntegerField()
@@ -190,8 +194,8 @@ class Plates(BaseModel):
 
 class Saurons(BaseModel):
     created = DateTimeField()
-    current = IntegerField()
-    number = IntegerField()
+    current = IntegerField(index=True)
+    number = IntegerField(index=True)
 
     class Meta:
         db_table = 'saurons'
@@ -223,7 +227,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -231,25 +235,25 @@ class SauronxTomls(BaseModel):
 
 class PlateRuns(BaseModel):
     calculated_mean_framerate = FloatField()
-    concern_level = CharField(null=True)
+    concern_level = CharField(index=True, null=True)
     created = DateTimeField()
-    dark_adaptation_seconds = IntegerField(null=True)
+    dark_adaptation_seconds = IntegerField(index=True, null=True)
     datetime_dosed = DateTimeField(index=True, null=True)
     datetime_run = DateTimeField(index=True)
-    days_post_fertilization = IntegerField(null=True)
+    days_post_fertilization = IntegerField(index=True, null=True)
     experimentalist = ForeignKeyField(db_column='experimentalist_id', rel_model=Users, to_field='id')
-    legacy_incubation_minutes = IntegerField(null=True)
-    legacy_name = CharField(null=True)
-    matlab_version = CharField(null=True)
+    legacy_incubation_minutes = IntegerField(index=True, null=True)
+    legacy_name = CharField(index=True, null=True)
+    matlab_version = CharField(index=True, null=True)
     notes = CharField(null=True)
     plate = ForeignKeyField(db_column='plate_id', rel_model=Plates, to_field='id')
-    platform = CharField(null=True)
+    platform = CharField(index=True, null=True)
     sauron_config = ForeignKeyField(db_column='sauron_config_id', rel_model=SauronConfigs, to_field='id')
-    sauronx_commit_sha1 = BlobField(null=True)  # auto-corrected to BlobField
+    sauronx_commit_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
     sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', null=True, rel_model=SauronxSubmissions, to_field='id')
     sauronx_toml = ForeignKeyField(db_column='sauronx_toml_id', null=True, rel_model=SauronxTomls, to_field='id')
     solvent_notes = CharField(null=True)
-    valar_commit_sha1 = BlobField(null=True)  # auto-corrected to BlobField
+    valar_commit_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
 
     class Meta:
         db_table = 'plate_runs'
@@ -287,11 +291,24 @@ class CarpDataTasks(BaseModel):
             (('name', 'task'), True),
         )
 
+class FishVariants(BaseModel):
+    created = DateTimeField()
+    creator = ForeignKeyField(db_column='creator_id', null=True, rel_model=Users, to_field='id')
+    date_created = DateField(null=True)
+    father_fish_variant = ForeignKeyField(db_column='father_fish_variant_id', null=True, rel_model='self', to_field='id')
+    lineage_type = CharField(index=True, null=True)
+    mother_fish_variant = ForeignKeyField(db_column='mother_fish_variant_id', null=True, rel_model='self', related_name='fish_variants_mother_fish_variant_set', to_field='id')
+    name = CharField(unique=True)
+    notes = CharField(null=True)
+
+    class Meta:
+        db_table = 'fish_variants'
+
 class CarpTanks(BaseModel):
     created = DateTimeField()
     datetime_died = DateTimeField(null=True)
+    fish_variant = ForeignKeyField(db_column='fish_variant_id', rel_model=FishVariants, to_field='id')
     internal = IntegerField(db_column='internal_id', unique=True)
-    is_alive = IntegerField()
     name = CharField(unique=True)
     notes = TextField(null=True)
     project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
@@ -368,7 +385,7 @@ class DataSources(BaseModel):
     description = CharField(null=True)
     external_version = CharField(null=True)
     name = CharField(index=True)
-    url = CharField(null=True)
+    url = CharField(index=True, null=True)
 
     class Meta:
         db_table = 'data_sources'
@@ -395,10 +412,10 @@ class CompoundSources(BaseModel):
 
 class ControlTypes(BaseModel):
     description = CharField()
-    drug_related = IntegerField()
-    genetics_related = IntegerField()
+    drug_related = IntegerField(index=True)
+    genetics_related = IntegerField(index=True)
     name = CharField(unique=True)
-    positive = IntegerField()
+    positive = IntegerField(index=True)
 
     class Meta:
         db_table = 'control_types'
@@ -413,18 +430,14 @@ class Features(BaseModel):
     class Meta:
         db_table = 'features'
 
-class FishVariants(BaseModel):
+class Genes(BaseModel):
     created = DateTimeField()
-    creator = ForeignKeyField(db_column='creator_id', null=True, rel_model=Users, to_field='id')
-    date_created = DateField(null=True)
-    father_fish_variant = ForeignKeyField(db_column='father_fish_variant_id', null=True, rel_model='self', to_field='id')
-    lineage_type = CharField(null=True)
-    mother_fish_variant = ForeignKeyField(db_column='mother_fish_variant_id', null=True, rel_model='self', related_name='fish_variants_mother_fish_variant_set', to_field='id')
-    name = CharField(unique=True)
-    notes = CharField(null=True)
+    description = CharField(null=True)
+    uniprot = CharField(db_column='uniprot_id', null=True, unique=True)
+    zfin = CharField(db_column='zfin_id', null=True, unique=True)
 
     class Meta:
-        db_table = 'fish_variants'
+        db_table = 'genes'
 
 class HeronBindingModes(BaseModel):
     created = DateTimeField()
@@ -468,35 +481,50 @@ class LorienConfigs(BaseModel):
     class Meta:
         db_table = 'lorien_configs'
 
+class Plasmids(BaseModel):
+    ape_file = BlobField()  # auto-corrected to BlobField
+    ape_file_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    box_number = IntegerField()
+    created = DateTimeField()
+    gene = ForeignKeyField(db_column='gene_id', null=True, rel_model=Genes, to_field='id')
+    tube_number = IntegerField()
+    use_case = CharField()
+
+    class Meta:
+        db_table = 'plasmids'
+        indexes = (
+            (('box_number', 'tube_number'), True),
+        )
+
 class Mutations(BaseModel):
-    affects_endogenous_zfin = CharField(db_column='affects_endogenous_zfin_id', null=True)
     created = DateTimeField()
     description = CharField(null=True)
+    endogenous_gene = ForeignKeyField(db_column='endogenous_gene_id', null=True, rel_model=Genes, to_field='id')
     fish_variant = ForeignKeyField(db_column='fish_variant_id', null=True, rel_model=FishVariants, to_field='id')
-    knockin_of_uniprot = CharField(db_column='knockin_of_uniprot_id', null=True)
-    plasmid = IntegerField(db_column='plasmid_id', null=True)
+    plasmid = ForeignKeyField(db_column='plasmid_id', null=True, rel_model=Plasmids, to_field='id')
 
     class Meta:
         db_table = 'mutations'
 
 class Oligos(BaseModel):
     created = DateTimeField()
+    mutation = ForeignKeyField(db_column='mutation_id', null=True, rel_model=Mutations, to_field='id')
+    plasmid = ForeignKeyField(db_column='plasmid_id', null=True, rel_model=Plasmids, to_field='id')
     sequence = TextField()
-    target_ebi = CharField(db_column='target_ebi_id', null=True)
     used_for = TextField()
 
     class Meta:
         db_table = 'oligos'
 
 class OrderedCompounds(BaseModel):
-    box_number = IntegerField(null=True)
+    box_number = IntegerField(index=True, null=True)
     compound = ForeignKeyField(db_column='compound_id', null=True, rel_model=Compounds, to_field='id')
     compound_source = ForeignKeyField(db_column='compound_source_id', null=True, rel_model=CompoundSources, to_field='id')
     concentration_millimolar = FloatField(null=True)
     created = DateTimeField()
     data_source = ForeignKeyField(db_column='data_source_id', null=True, rel_model=DataSources, to_field='id')
-    date_ordered = DateField(null=True)
-    external = CharField(db_column='external_id', null=True)
+    date_ordered = DateField(index=True, null=True)
+    external = CharField(db_column='external_id', index=True, null=True)
     legacy_internal = CharField(db_column='legacy_internal_id', index=True, null=True)
     mechanism_target_notes = TextField(null=True)
     molecular_weight = FloatField(null=True)
@@ -508,7 +536,7 @@ class OrderedCompounds(BaseModel):
     solvent_notes = TextField(null=True)
     suspicious = IntegerField()
     unique_hash = CharField(unique=True)
-    well_number = IntegerField(null=True)
+    well_number = IntegerField(index=True, null=True)
 
     class Meta:
         db_table = 'ordered_compounds'
@@ -517,13 +545,13 @@ class OrderedCompounds(BaseModel):
         )
 
 class Wells(BaseModel):
-    approx_n_fish = IntegerField(null=True)
+    approx_n_fish = IntegerField(index=True, null=True)
     control_type = ForeignKeyField(db_column='control_type', null=True, rel_model=ControlTypes, to_field='id')
     created = DateTimeField()
     fish_variant = ForeignKeyField(db_column='fish_variant_id', null=True, rel_model=FishVariants, to_field='id')
     plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
     well_group = IntegerField(index=True, null=True)
-    well_index = IntegerField()
+    well_index = IntegerField(index=True)
 
     class Meta:
         db_table = 'wells'
@@ -532,8 +560,8 @@ class Wells(BaseModel):
         )
 
 class Rois(BaseModel):
-    lorien_commit_sha1 = BlobField(null=True)  # auto-corrected to BlobField
-    lorien_config = IntegerField(null=True)
+    lorien_commit_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
+    lorien_config = IntegerField(index=True, null=True)
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
     x0 = IntegerField()
     x1 = IntegerField()
@@ -567,7 +595,7 @@ class Sensors(BaseModel):
 
 class SensorData(BaseModel):
     floats = BlobField()  # auto-corrected to BlobField
-    floats_sha1 = BlobField()  # auto-corrected to BlobField
+    floats_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
     sensor = ForeignKeyField(db_column='sensor_id', rel_model=Sensors, to_field='id')
 
@@ -632,9 +660,9 @@ class TemplateWells(BaseModel):
 
 class WellFeatures(BaseModel):
     floats = BlobField()  # auto-corrected to BlobField
-    lorien_commit_sha1 = BlobField()  # auto-corrected to BlobField
+    lorien_commit_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     lorien_config = ForeignKeyField(db_column='lorien_config_id', rel_model=LorienConfigs, to_field='id')
-    sha1 = BlobField()  # auto-corrected to BlobField
+    sha1 = BlobField(index=True)  # auto-corrected to BlobField
     type = ForeignKeyField(db_column='type_id', rel_model=Features, to_field='id')
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
 
@@ -648,8 +676,8 @@ class WellFrameImages(BaseModel):
     created = DateTimeField()
     frame = IntegerField()
     image = BlobField()  # auto-corrected to BlobField
-    image_format = CharField()
-    image_sha1 = BlobField()  # auto-corrected to BlobField
+    image_format = CharField(index=True)
+    image_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
 
     class Meta:
