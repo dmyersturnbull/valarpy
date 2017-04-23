@@ -16,7 +16,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     template_assay = IntegerField(db_column='template_assay_id', null=True)
 
     class Meta:
@@ -227,7 +227,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -332,6 +332,15 @@ class CarpData(BaseModel):
     class Meta:
         db_table = 'carp_data'
 
+class CarpProjectTypes(BaseModel):
+    base_type = CharField()
+    description = TextField(null=True)
+    name = CharField(unique=True)
+    primary_user = ForeignKeyField(db_column='primary_user', null=True, rel_model=Users, to_field='id')
+
+    class Meta:
+        db_table = 'carp_project_types'
+
 class CarpProjects(BaseModel):
     ancestor = ForeignKeyField(db_column='ancestor_id', null=True, rel_model='self', to_field='id')
     created = DateTimeField()
@@ -341,7 +350,7 @@ class CarpProjects(BaseModel):
     modified = DateTimeField()
     name = CharField(unique=True)
     owner = ForeignKeyField(db_column='owner_id', null=True, rel_model=Users, to_field='id')
-    project_type = CharField(index=True, null=True)
+    project_type = ForeignKeyField(db_column='project_type_id', null=True, rel_model=CarpProjectTypes, to_field='id')
 
     class Meta:
         db_table = 'carp_projects'
@@ -414,7 +423,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(unique=True)
+    name = CharField(index=True)
     positive = IntegerField(index=True)
 
     class Meta:
@@ -489,6 +498,7 @@ class Plasmids(BaseModel):
     gene = ForeignKeyField(db_column='gene_id', null=True, rel_model=Genes, to_field='id')
     tube_number = IntegerField()
     use_case = CharField()
+    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
 
     class Meta:
         db_table = 'plasmids'
@@ -502,6 +512,7 @@ class Mutations(BaseModel):
     endogenous_gene = ForeignKeyField(db_column='endogenous_gene_id', null=True, rel_model=Genes, to_field='id')
     fish_variant = ForeignKeyField(db_column='fish_variant_id', null=True, rel_model=FishVariants, to_field='id')
     plasmid = ForeignKeyField(db_column='plasmid_id', null=True, rel_model=Plasmids, to_field='id')
+    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
 
     class Meta:
         db_table = 'mutations'
@@ -512,6 +523,7 @@ class Oligos(BaseModel):
     plasmid = ForeignKeyField(db_column='plasmid_id', null=True, rel_model=Plasmids, to_field='id')
     sequence = TextField()
     used_for = TextField()
+    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
 
     class Meta:
         db_table = 'oligos'
