@@ -227,7 +227,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -241,10 +241,11 @@ class PlateRuns(BaseModel):
     datetime_dosed = DateTimeField(index=True, null=True)
     datetime_run = DateTimeField(index=True)
     experimentalist = ForeignKeyField(db_column='experimentalist_id', rel_model=Users, to_field='id')
-    incubation_minutes = IntegerField(index=True)
+    incubation_minutes = IntegerField(index=True, null=True)
     legacy_name = CharField(index=True, null=True)
     matlab_version = CharField(index=True, null=True)
     notes = TextField(null=True)
+    person_plated = ForeignKeyField(db_column='person_plated_id', rel_model=Users, related_name='users_person_plated_set', to_field='id')
     plate = ForeignKeyField(db_column='plate_id', rel_model=Plates, to_field='id')
     platform = CharField(index=True, null=True)
     sauron_config = ForeignKeyField(db_column='sauron_config_id', rel_model=SauronConfigs, to_field='id')
