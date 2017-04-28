@@ -218,16 +218,17 @@ class SauronxSubmissions(BaseModel):
     datetime_fish_plated = DateTimeField()
     id_hash_hex = CharField(unique=True)
     notes = TextField(null=True)
+    person_plated = ForeignKeyField(db_column='person_plated_id', rel_model=Users, to_field='id')
     plate = ForeignKeyField(db_column='plate_id', null=True, rel_model=Plates, to_field='id')
     project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
-    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
+    user = ForeignKeyField(db_column='user_id', rel_model=Users, related_name='users_user_set', to_field='id')
 
     class Meta:
         db_table = 'sauronx_submissions'
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -422,7 +423,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(index=True)
+    name = CharField(unique=True)
     positive = IntegerField(index=True)
 
     class Meta:
