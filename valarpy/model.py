@@ -16,7 +16,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     template_assay = IntegerField(db_column='template_assay_id', null=True)
 
     class Meta:
@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -232,7 +232,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -613,6 +613,7 @@ class Rois(BaseModel):
 class SauronxSubmissionHistory(BaseModel):
     created = DateTimeField()
     datetime_started = DateTimeField()
+    sauron = IntegerField(db_column='sauron_id')
     sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', rel_model=SauronxSubmissions, to_field='id')
     status = CharField()
 

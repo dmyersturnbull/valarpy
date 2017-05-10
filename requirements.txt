@@ -1,4 +1,4 @@
-PyMySQL == 0.7.6
-peewee == 2.8.5
+PyMySQL == 0.7.11
+peewee == 2.9.2
 sshtunnel == 0.1.2
-numpy == 1.11.1
+numpy == 1.12.1
