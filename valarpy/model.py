@@ -108,6 +108,7 @@ class Cameras(BaseModel):
 class CameraConfigs(BaseModel):
     brightness = FloatField(null=True)
     camera = ForeignKeyField(db_column='camera_id', rel_model=Cameras, to_field='id')
+    clockwise_degrees_to_rotate_image = FloatField(null=True)
     contrast = FloatField(null=True)
     created = DateTimeField()
     exposure = FloatField(null=True)
@@ -210,6 +211,9 @@ class SauronConfigs(BaseModel):
 
     class Meta:
         db_table = 'sauron_configs'
+        indexes = (
+            (('sauron', 'datetime_changed'), True),
+        )
 
 class SauronxSubmissions(BaseModel):
     created = DateTimeField()
@@ -308,7 +312,7 @@ class CarpTanks(BaseModel):
     created = DateTimeField()
     datetime_died = DateTimeField(null=True)
     fish_variant = ForeignKeyField(db_column='fish_variant_id', rel_model=FishVariants, to_field='id')
-    internal = IntegerField(db_column='internal_id', unique=True)
+    internal = CharField(db_column='internal_id', unique=True)
     name = CharField(unique=True)
     notes = TextField(null=True)
     project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
@@ -567,6 +571,17 @@ class OrderedCompounds(BaseModel):
             (('box_number', 'well_number'), True),
         )
 
+class PlateRunInfo(BaseModel):
+    name = CharField()
+    plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
+    value = CharField()
+
+    class Meta:
+        db_table = 'plate_run_info'
+        indexes = (
+            (('plate_run', 'name'), True),
+        )
+
 class Wells(BaseModel):
     approx_n_fish = IntegerField(index=True, null=True)
     control_type = ForeignKeyField(db_column='control_type', null=True, rel_model=ControlTypes, to_field='id')
@@ -594,6 +609,18 @@ class Rois(BaseModel):
 
     class Meta:
         db_table = 'rois'
+
+class SauronxSubmissionHistory(BaseModel):
+    created = DateTimeField()
+    datetime_started = DateTimeField()
+    sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', rel_model=SauronxSubmissions, to_field='id')
+    status = CharField()
+
+    class Meta:
+        db_table = 'sauronx_submission_history'
+        indexes = (
+            (('sauronx_submission', 'status', 'datetime_started'), True),
+        )
 
 class SauronxSubmissionParams(BaseModel):
     name = CharField()
@@ -630,7 +657,7 @@ class Stimuli(BaseModel):
     analog = IntegerField()
     audio_file = ForeignKeyField(db_column='audio_file_id', null=True, rel_model=AudioFiles, to_field='id', unique=True)
     created = DateTimeField()
-    default_color = CharField(unique=True)
+    default_color = CharField()
     description = CharField(null=True)
     name = CharField(unique=True)
     rgb = BlobField(null=True)  # auto-corrected to BlobField
