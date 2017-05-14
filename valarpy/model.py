@@ -613,7 +613,7 @@ class Rois(BaseModel):
 class SauronxSubmissionHistory(BaseModel):
     created = DateTimeField()
     datetime_started = DateTimeField()
-    sauron = IntegerField(db_column='sauron_id')
+    sauron = ForeignKeyField(db_column='sauron_id', rel_model=Saurons, to_field='id')
     sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', rel_model=SauronxSubmissions, to_field='id')
     status = CharField()
 
