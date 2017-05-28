@@ -188,6 +188,7 @@ class Projects(BaseModel):
 class Plates(BaseModel):
     created = DateTimeField()
     datetime_fish_plated = DateTimeField(index=True, null=True)
+    person_plated = ForeignKeyField(db_column='person_plated_id', rel_model=Users, to_field='id')
     plate_type = ForeignKeyField(db_column='plate_type_id', null=True, rel_model=PlateTypes, to_field='id')
     project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
 
@@ -232,7 +233,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -248,16 +249,13 @@ class PlateRuns(BaseModel):
     experimentalist = ForeignKeyField(db_column='experimentalist_id', rel_model=Users, to_field='id')
     incubation_minutes = IntegerField(index=True, null=True)
     legacy_name = CharField(index=True, null=True)
-    matlab_version = CharField(index=True, null=True)
     notes = TextField(null=True)
-    person_plated = ForeignKeyField(db_column='person_plated_id', rel_model=Users, related_name='users_person_plated_set', to_field='id')
     plate = ForeignKeyField(db_column='plate_id', rel_model=Plates, to_field='id')
-    platform = CharField(index=True, null=True)
+    project = IntegerField(db_column='project_id')
     sauron_config = ForeignKeyField(db_column='sauron_config_id', rel_model=SauronConfigs, to_field='id')
-    sauronx_commit_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
     sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', null=True, rel_model=SauronxSubmissions, to_field='id')
     sauronx_toml = ForeignKeyField(db_column='sauronx_toml_id', null=True, rel_model=SauronxTomls, to_field='id')
-    valar_commit_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
+    short_description = CharField()
 
     class Meta:
         db_table = 'plate_runs'
@@ -380,17 +378,13 @@ class CarpTaskHistory(BaseModel):
     class Meta:
         db_table = 'carp_task_history'
 
-class Compounds(BaseModel):
-    chembl = CharField(db_column='chembl_id', null=True, unique=True)
-    chemspider = IntegerField(db_column='chemspider_id', null=True)
+class CompoundSources(BaseModel):
     created = DateTimeField()
-    inchi = CharField()
-    inchikey = CharField(unique=True)
-    inchikey_connectivity = CharField(index=True)
-    smiles = CharField(null=True)
+    description = CharField(null=True)
+    name = CharField(unique=True)
 
     class Meta:
-        db_table = 'compounds'
+        db_table = 'compound_sources'
 
 class DataSources(BaseModel):
     created = DateTimeField()
@@ -406,6 +400,57 @@ class DataSources(BaseModel):
             (('name', 'external_version'), True),
         )
 
+class Compounds(BaseModel):
+    chembl = CharField(db_column='chembl_id', null=True, unique=True)
+    chemspider = IntegerField(db_column='chemspider_id', null=True)
+    created = DateTimeField()
+    inchi = CharField()
+    inchikey = CharField(unique=True)
+    inchikey_connectivity = CharField(index=True)
+    smiles = CharField(null=True)
+
+    class Meta:
+        db_table = 'compounds'
+
+class OrderedCompounds(BaseModel):
+    box_number = IntegerField(index=True, null=True)
+    compound = ForeignKeyField(db_column='compound_id', null=True, rel_model=Compounds, to_field='id')
+    compound_source = ForeignKeyField(db_column='compound_source_id', null=True, rel_model=CompoundSources, to_field='id')
+    concentration_millimolar = FloatField(null=True)
+    created = DateTimeField()
+    data_source = ForeignKeyField(db_column='data_source_id', null=True, rel_model=DataSources, to_field='id')
+    date_ordered = DateField(index=True, null=True)
+    external = CharField(db_column='external_id', index=True, null=True)
+    legacy_internal = CharField(db_column='legacy_internal_id', index=True, null=True)
+    location = CharField(null=True)
+    molecular_weight = FloatField(null=True)
+    notes = TextField(null=True)
+    person_ordered = ForeignKeyField(db_column='person_ordered', null=True, rel_model=Users, to_field='id')
+    reason_ordered = TextField(null=True)
+    solvent = ForeignKeyField(db_column='solvent_id', null=True, rel_model=Compounds, related_name='compounds_solvent_set', to_field='id')
+    supplier_catalog_number = CharField(null=True)
+    suspicious = IntegerField()
+    unique_hash = CharField(unique=True)
+    well_number = IntegerField(index=True, null=True)
+
+    class Meta:
+        db_table = 'ordered_compounds'
+        indexes = (
+            (('box_number', 'well_number'), True),
+        )
+
+class CompoundIds(BaseModel):
+    created = DateTimeField()
+    data_source = ForeignKeyField(db_column='data_source_id', rel_model=DataSources, to_field='id')
+    external = CharField(db_column='external_id', index=True)
+    ordered_compound = ForeignKeyField(db_column='ordered_compound_id', rel_model=OrderedCompounds, to_field='id')
+
+    class Meta:
+        db_table = 'compound_ids'
+        indexes = (
+            (('ordered_compound', 'data_source'), True),
+        )
+
 class CompoundNames(BaseModel):
     compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
     created = DateTimeField()
@@ -414,14 +459,6 @@ class CompoundNames(BaseModel):
 
     class Meta:
         db_table = 'compound_names'
-
-class CompoundSources(BaseModel):
-    created = DateTimeField()
-    description = CharField(null=True)
-    name = CharField(unique=True)
-
-    class Meta:
-        db_table = 'compound_sources'
 
 class ControlTypes(BaseModel):
     description = CharField()
@@ -437,8 +474,8 @@ class Features(BaseModel):
     created = DateTimeField()
     data_type = CharField()
     description = CharField()
+    dimensions = CharField()
     name = CharField(unique=True)
-    tensor_order = IntegerField()
 
     class Meta:
         db_table = 'features'
@@ -532,31 +569,6 @@ class Oligos(BaseModel):
     class Meta:
         db_table = 'oligos'
 
-class OrderedCompounds(BaseModel):
-    box_number = IntegerField(index=True, null=True)
-    compound = ForeignKeyField(db_column='compound_id', null=True, rel_model=Compounds, to_field='id')
-    compound_source = ForeignKeyField(db_column='compound_source_id', null=True, rel_model=CompoundSources, to_field='id')
-    concentration_millimolar = FloatField(null=True)
-    created = DateTimeField()
-    data_source = ForeignKeyField(db_column='data_source_id', null=True, rel_model=DataSources, to_field='id')
-    date_ordered = DateField(index=True, null=True)
-    external = CharField(db_column='external_id', index=True, null=True)
-    legacy_internal = CharField(db_column='legacy_internal_id', index=True, null=True)
-    molecular_weight = FloatField(null=True)
-    notes = TextField(null=True)
-    person_ordered = ForeignKeyField(db_column='person_ordered', null=True, rel_model=Users, to_field='id')
-    reason_ordered = TextField(null=True)
-    solvent = ForeignKeyField(db_column='solvent_id', null=True, rel_model=Compounds, related_name='compounds_solvent_set', to_field='id')
-    suspicious = IntegerField()
-    unique_hash = CharField(unique=True)
-    well_number = IntegerField(index=True, null=True)
-
-    class Meta:
-        db_table = 'ordered_compounds'
-        indexes = (
-            (('box_number', 'well_number'), True),
-        )
-
 class PlateRunInfo(BaseModel):
     name = CharField()
     plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
@@ -598,7 +610,7 @@ class Rois(BaseModel):
 
 class SauronxSubmissionHistory(BaseModel):
     created = DateTimeField()
-    datetime_started = DateTimeField()
+    datetime_modified = DateTimeField()
     sauron = ForeignKeyField(db_column='sauron_id', rel_model=Saurons, to_field='id')
     sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', rel_model=SauronxSubmissions, to_field='id')
     status = CharField()
@@ -606,7 +618,7 @@ class SauronxSubmissionHistory(BaseModel):
     class Meta:
         db_table = 'sauronx_submission_history'
         indexes = (
-            (('sauronx_submission', 'status', 'datetime_started'), True),
+            (('sauronx_submission', 'status', 'datetime_modified'), True),
         )
 
 class SauronxSubmissionParams(BaseModel):
@@ -624,6 +636,7 @@ class SauronxSubmissionParams(BaseModel):
 class Sensors(BaseModel):
     blob_type = CharField(null=True)
     created = DateTimeField()
+    data_type = CharField()
     description = CharField(null=True)
     n_between = IntegerField(null=True)
     name = CharField(unique=True)
