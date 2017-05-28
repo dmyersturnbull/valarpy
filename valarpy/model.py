@@ -10,32 +10,6 @@ class BaseModel(Model):
     class Meta:
         database = database
 
-class Assays(BaseModel):
-    created = DateTimeField()
-    description = CharField(null=True)
-    frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
-    hidden = IntegerField()
-    length = IntegerField()
-    name = CharField(unique=True)
-    template_assay = IntegerField(db_column='template_assay_id', null=True)
-
-    class Meta:
-        db_table = 'assays'
-        indexes = (
-            (('name', 'frames_sha1'), True),
-        )
-
-class AssayParams(BaseModel):
-    assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
-    name = CharField()
-    value = FloatField()
-
-    class Meta:
-        db_table = 'assay_params'
-        indexes = (
-            (('name', 'assay'), True),
-        )
-
 class Users(BaseModel):
     bcrypt_hash = CharField(index=True, null=True)
     created = DateTimeField()
@@ -56,6 +30,32 @@ class TemplateAssays(BaseModel):
 
     class Meta:
         db_table = 'template_assays'
+
+class Assays(BaseModel):
+    created = DateTimeField()
+    description = CharField(null=True)
+    frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    hidden = IntegerField()
+    length = IntegerField()
+    name = CharField(index=True)
+    template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
+
+    class Meta:
+        db_table = 'assays'
+        indexes = (
+            (('name', 'frames_sha1'), True),
+        )
+
+class AssayParams(BaseModel):
+    assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
+    name = CharField()
+    value = FloatField()
+
+    class Meta:
+        db_table = 'assay_params'
+        indexes = (
+            (('name', 'assay'), True),
+        )
 
 class Protocols(BaseModel):
     assays_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -232,7 +232,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -427,7 +427,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(unique=True)
+    name = CharField(index=True)
     positive = IntegerField(index=True)
 
     class Meta:
@@ -442,20 +442,6 @@ class Features(BaseModel):
 
     class Meta:
         db_table = 'features'
-
-class FrameImages(BaseModel):
-    created = DateTimeField()
-    frame = IntegerField()
-    image = BlobField()  # auto-corrected to BlobField
-    image_format = CharField(index=True)
-    image_sha1 = BlobField(index=True)  # auto-corrected to BlobField
-    plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
-
-    class Meta:
-        db_table = 'frame_images'
-        indexes = (
-            (('plate_run', 'frame'), True),
-        )
 
 class Genes(BaseModel):
     created = DateTimeField()
@@ -696,9 +682,6 @@ class TemplateTreatments(BaseModel):
 
     class Meta:
         db_table = 'template_treatments'
-        indexes = (
-            (('template_plate', 'well_range_expression'), True),
-        )
 
 class TemplateWells(BaseModel):
     age_dpf_expression = CharField()
