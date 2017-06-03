@@ -233,7 +233,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -251,7 +251,7 @@ class PlateRuns(BaseModel):
     legacy_name = CharField(index=True, null=True)
     notes = TextField(null=True)
     plate = ForeignKeyField(db_column='plate_id', rel_model=Plates, to_field='id')
-    project = IntegerField(db_column='project_id')
+    project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
     sauron_config = ForeignKeyField(db_column='sauron_config_id', rel_model=SauronConfigs, to_field='id')
     sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', null=True, rel_model=SauronxSubmissions, to_field='id')
     sauronx_toml = ForeignKeyField(db_column='sauronx_toml_id', null=True, rel_model=SauronxTomls, to_field='id')
@@ -352,7 +352,7 @@ class CarpProjects(BaseModel):
     modified = DateTimeField()
     name = CharField(unique=True)
     owner = ForeignKeyField(db_column='owner_id', null=True, rel_model=Users, to_field='id')
-    project_type = ForeignKeyField(db_column='project_type_id', null=True, rel_model=CarpProjectTypes, to_field='id')
+    project_type = IntegerField(db_column='project_type_id', index=True, null=True)
 
     class Meta:
         db_table = 'carp_projects'
@@ -613,7 +613,7 @@ class SauronxSubmissionHistory(BaseModel):
     datetime_modified = DateTimeField()
     sauron = ForeignKeyField(db_column='sauron_id', rel_model=Saurons, to_field='id')
     sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', rel_model=SauronxSubmissions, to_field='id')
-    status = CharField()
+    status = CharField(null=True)
 
     class Meta:
         db_table = 'sauronx_submission_history'
