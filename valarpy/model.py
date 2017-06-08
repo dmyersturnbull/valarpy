@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -267,7 +267,7 @@ class CarpTasks(BaseModel):
     failure_target = ForeignKeyField(db_column='failure_target_id', null=True, rel_model='self', to_field='id')
     name = CharField(unique=True)
     notes = TextField(null=True)
-    project_type = CharField(index=True, null=True)
+    project_type = IntegerField(index=True)
     success_condition = CharField(null=True)
     success_target = ForeignKeyField(db_column='success_target_id', null=True, rel_model='self', related_name='carp_tasks_success_target_set', to_field='id')
 
@@ -352,7 +352,7 @@ class CarpProjects(BaseModel):
     modified = DateTimeField()
     name = CharField(unique=True)
     owner = ForeignKeyField(db_column='owner_id', null=True, rel_model=Users, to_field='id')
-    project_type = IntegerField(db_column='project_type_id', index=True, null=True)
+    project_type = ForeignKeyField(db_column='project_type_id', null=True, rel_model=CarpProjectTypes, to_field='id')
 
     class Meta:
         db_table = 'carp_projects'
