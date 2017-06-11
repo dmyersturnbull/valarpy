@@ -37,7 +37,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
@@ -224,8 +224,9 @@ class SauronxSubmissions(BaseModel):
     id_hash_hex = CharField(unique=True)
     notes = TextField(null=True)
     person_plated = ForeignKeyField(db_column='person_plated_id', rel_model=Users, to_field='id')
-    plate = ForeignKeyField(db_column='plate_id', null=True, rel_model=Plates, to_field='id')
     project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
+    same_plate_submission = ForeignKeyField(db_column='same_plate_submission_id', null=True, rel_model='self', to_field='id')
+    short_description = CharField(null=True)
     user = ForeignKeyField(db_column='user_id', rel_model=Users, related_name='users_user_set', to_field='id')
 
     class Meta:
@@ -233,7 +234,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -264,12 +265,12 @@ class CarpTasks(BaseModel):
     days_to_wait = IntegerField(null=True)
     description = TextField(null=True)
     failure_condition = CharField(null=True)
-    failure_target = ForeignKeyField(db_column='failure_target_id', null=True, rel_model='self', to_field='id')
+    failure_target = IntegerField(db_column='failure_target_id', index=True, null=True)
     name = CharField(unique=True)
     notes = TextField(null=True)
     project_type = IntegerField(index=True)
     success_condition = CharField(null=True)
-    success_target = ForeignKeyField(db_column='success_target_id', null=True, rel_model='self', related_name='carp_tasks_success_target_set', to_field='id')
+    success_target = IntegerField(db_column='success_target_id', index=True, null=True)
 
     class Meta:
         db_table = 'carp_tasks'
@@ -464,7 +465,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(index=True)
+    name = CharField(unique=True)
     positive = IntegerField(index=True)
 
     class Meta:
