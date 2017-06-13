@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -307,34 +307,6 @@ class FishVariants(BaseModel):
     class Meta:
         db_table = 'fish_variants'
 
-class CarpTanks(BaseModel):
-    created = DateTimeField()
-    datetime_died = DateTimeField(null=True)
-    fish_variant = ForeignKeyField(db_column='fish_variant_id', rel_model=FishVariants, to_field='id')
-    internal = CharField(db_column='internal_id', unique=True)
-    name = CharField(unique=True)
-    notes = TextField(null=True)
-    project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
-    task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
-
-    class Meta:
-        db_table = 'carp_tanks'
-
-class CarpData(BaseModel):
-    created = DateTimeField()
-    data_task = ForeignKeyField(db_column='data_task_id', rel_model=CarpDataTasks, to_field='id')
-    external_uri = TextField(null=True)
-    father_tank = ForeignKeyField(db_column='father_tank', rel_model=CarpTanks, to_field='id')
-    file_blob = BlobField(null=True)  # auto-corrected to BlobField
-    file_blob_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
-    mother_tank = ForeignKeyField(db_column='mother_tank', rel_model=CarpTanks, related_name='carp_tanks_mother_tank_set', to_field='id')
-    notes = TextField(null=True)
-    person_collected = ForeignKeyField(db_column='person_collected', rel_model=Users, to_field='id')
-    plate_run = ForeignKeyField(db_column='plate_run_id', null=True, rel_model=PlateRuns, to_field='id')
-
-    class Meta:
-        db_table = 'carp_data'
-
 class CarpProjectTypes(BaseModel):
     base_type = CharField()
     description = TextField(null=True)
@@ -357,6 +329,34 @@ class CarpProjects(BaseModel):
 
     class Meta:
         db_table = 'carp_projects'
+
+class CarpTanks(BaseModel):
+    created = DateTimeField()
+    datetime_died = DateTimeField(null=True)
+    fish_variant = ForeignKeyField(db_column='fish_variant_id', rel_model=FishVariants, to_field='id')
+    internal = CharField(db_column='internal_id', unique=True)
+    name = CharField(unique=True)
+    notes = TextField(null=True)
+    project = ForeignKeyField(db_column='project_id', rel_model=CarpProjects, to_field='id')
+    task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
+
+    class Meta:
+        db_table = 'carp_tanks'
+
+class CarpData(BaseModel):
+    created = DateTimeField()
+    data_task = ForeignKeyField(db_column='data_task_id', rel_model=CarpDataTasks, to_field='id')
+    external_uri = TextField(null=True)
+    father_tank = ForeignKeyField(db_column='father_tank', rel_model=CarpTanks, to_field='id')
+    file_blob = BlobField(null=True)  # auto-corrected to BlobField
+    file_blob_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
+    mother_tank = ForeignKeyField(db_column='mother_tank', rel_model=CarpTanks, related_name='carp_tanks_mother_tank_set', to_field='id')
+    notes = TextField(null=True)
+    person_collected = ForeignKeyField(db_column='person_collected', rel_model=Users, to_field='id')
+    plate_run = ForeignKeyField(db_column='plate_run_id', null=True, rel_model=PlateRuns, to_field='id')
+
+    class Meta:
+        db_table = 'carp_data'
 
 class CarpTankHistory(BaseModel):
     created = DateTimeField()
