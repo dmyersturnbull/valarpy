@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -173,6 +173,7 @@ class TemplatePlates(BaseModel):
         db_table = 'template_plates'
 
 class Projects(BaseModel):
+    active = IntegerField(null=True)
     created = DateTimeField()
     default_dark_adaptation_seconds = IntegerField()
     description = CharField(null=True)
@@ -234,7 +235,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
