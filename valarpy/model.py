@@ -37,7 +37,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -164,6 +164,7 @@ class TemplatePlates(BaseModel):
     author = ForeignKeyField(db_column='author_id', rel_model=Users, to_field='id')
     created = DateTimeField()
     description = CharField(null=True)
+    hidden = IntegerField()
     name = CharField(unique=True)
     plate_type = ForeignKeyField(db_column='plate_type_id', rel_model=PlateTypes, to_field='id')
     solvent_dose_type = CharField()
@@ -235,7 +236,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -373,7 +374,7 @@ class CarpTankHistory(BaseModel):
 
 class CarpTaskHistory(BaseModel):
     created = DateTimeField()
-    project = ForeignKeyField(db_column='project_id', rel_model=Projects, to_field='id')
+    project = ForeignKeyField(db_column='project_id', rel_model=CarpProjects, to_field='id')
     success = IntegerField()
     task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
 
@@ -466,7 +467,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(unique=True)
+    name = CharField(index=True)
     positive = IntegerField(index=True)
 
     class Meta:
