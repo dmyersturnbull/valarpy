@@ -37,7 +37,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -340,7 +340,6 @@ class CarpTanks(BaseModel):
     name = CharField(unique=True)
     notes = TextField(null=True)
     project = ForeignKeyField(db_column='project_id', rel_model=CarpProjects, to_field='id')
-    task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
 
     class Meta:
         db_table = 'carp_tanks'
@@ -368,6 +367,7 @@ class CarpTankHistory(BaseModel):
     n_fish = IntegerField()
     person_scanned = ForeignKeyField(db_column='person_scanned', rel_model=Users, to_field='id')
     tank = ForeignKeyField(db_column='tank_id', rel_model=CarpTanks, to_field='id')
+    task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
 
     class Meta:
         db_table = 'carp_tank_history'
@@ -467,7 +467,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(index=True)
+    name = CharField(unique=True)
     positive = IntegerField(index=True)
 
     class Meta:
