@@ -236,7 +236,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -321,8 +321,6 @@ class CarpProjectTypes(BaseModel):
 class CarpProjects(BaseModel):
     ancestor = ForeignKeyField(db_column='ancestor_id', null=True, rel_model='self', to_field='id')
     created = DateTimeField()
-    current_notes = TextField(null=True)
-    current_task = ForeignKeyField(db_column='current_task', null=True, rel_model=CarpTasks, to_field='id')
     description = TextField(null=True)
     modified = DateTimeField()
     name = CharField(unique=True)
@@ -334,7 +332,6 @@ class CarpProjects(BaseModel):
 
 class CarpTanks(BaseModel):
     created = DateTimeField()
-    datetime_died = DateTimeField(null=True)
     fish_variant = ForeignKeyField(db_column='fish_variant_id', rel_model=FishVariants, to_field='id')
     internal = CharField(db_column='internal_id', unique=True)
     name = CharField(unique=True)
@@ -359,27 +356,25 @@ class CarpData(BaseModel):
     class Meta:
         db_table = 'carp_data'
 
-class CarpTankHistory(BaseModel):
+class CarpScans(BaseModel):
     created = DateTimeField()
-    date_scanned = DateField(index=True)
-    dead_fish = IntegerField()
-    location = CharField(null=True)
-    n_fish = IntegerField()
-    person_scanned = ForeignKeyField(db_column='person_scanned', rel_model=Users, to_field='id')
+    datetime_scanned = DateTimeField()
+    person_scanned = ForeignKeyField(db_column='person_scanned_id', rel_model=Users, to_field='id')
+    scan_type = CharField()
+    scan_value = CharField()
+    tank = ForeignKeyField(db_column='tank_id', rel_model=CarpTanks, to_field='id')
+
+    class Meta:
+        db_table = 'carp_scans'
+
+class CarpTankTasks(BaseModel):
+    created = DateTimeField()
+    notes = CharField()
     tank = ForeignKeyField(db_column='tank_id', rel_model=CarpTanks, to_field='id')
     task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
 
     class Meta:
-        db_table = 'carp_tank_history'
-
-class CarpTaskHistory(BaseModel):
-    created = DateTimeField()
-    project = ForeignKeyField(db_column='project_id', rel_model=CarpProjects, to_field='id')
-    success = IntegerField()
-    task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
-
-    class Meta:
-        db_table = 'carp_task_history'
+        db_table = 'carp_tank_tasks'
 
 class CompoundSources(BaseModel):
     created = DateTimeField()
@@ -467,7 +462,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(unique=True)
+    name = CharField(index=True)
     positive = IntegerField(index=True)
 
     class Meta:

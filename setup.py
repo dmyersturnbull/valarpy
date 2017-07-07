@@ -5,7 +5,7 @@ from distutils.core import setup
 
 setup(
 	name='valarpy',
-	version='0.12.8',
+	version='0.13.0',
 	description='Python connection code to Valar',
 	author='Douglas Myers-Turnbull',
 	url='https://github.com/kokellab/valarpy',
