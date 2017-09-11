@@ -1,9 +1,7 @@
-# coding=utf-8
-
 import os
 import json
 import logging
-from typing import Dict
+from typing import Dict, Union
 from valarpy.connection import Connection
 
 _valar_config_var = 'VALARPY_CONFIG'
@@ -24,7 +22,10 @@ class GlobalConnection(Connection):
 		if os.path.isfile(config_path) and os.access(config_path, os.R_OK):
 			logging.info("Using Valar connection from {}='{}'".format(_valar_config_var, config_path))
 			with open(config_path) as jscfg:
-				return cls(**json.load(jscfg))
+				params = json.load(jscfg)  # type: Dict[str, Union[str, int, None]]
+				if 'ssh_username' not in params: params['ssh_username'] = None
+				if 'ssh_password' not in params: params['ssh_password'] = None
+				return cls(**params)
 		else:
 			raise ValueError("{} does not exist, is not a file, or is not readable".format(config_path))
 

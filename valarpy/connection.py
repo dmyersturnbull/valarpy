@@ -1,12 +1,8 @@
-# coding=utf-8
-
-import json
 from sshtunnel import SSHTunnelForwarder
 import pymysql
 import peewee
-import contextlib
 import logging
-from typing import Tuple, Iterator, Dict
+from typing import Tuple, Iterator, Dict, Optional
 
 class Connection:
 
@@ -23,7 +19,7 @@ class Connection:
 	plain_sql_database = None
 	peewee_database = None
 
-	def __init__(self, ssh_username: str, ssh_password: str, db_username: str, db_password: str, db_name: str='valar',
+	def __init__(self, ssh_username: Optional[str], ssh_password: Optional[str], db_username: str, db_password: str, db_name: str='valar',
 				ssh_host: str="localhost", ssh_port: int=22,
 				db_port: int=3306):
 		self._ssh_username = ssh_username
@@ -34,9 +30,11 @@ class Connection:
 		self._ssh_host = ssh_host
 		self._ssh_port = ssh_port
 		self._db_port = db_port
-		self._tunnel = SSHTunnelForwarder((self._ssh_host, self._ssh_port),
-										  ssh_username=self._ssh_username, ssh_password=self._ssh_password,
-										  remote_bind_address=('localhost', self._db_port))
+		self._tunnel = SSHTunnelForwarder(
+			(self._ssh_host, self._ssh_port),
+			ssh_username=self._ssh_username, ssh_password=self._ssh_password,
+			remote_bind_address=('localhost', self._db_port)
+		)
 
 	def connect_with_peewee(self):
 		self.peewee_database = peewee.MySQLDatabase(self._db_name, **self._connection_params())
