@@ -6,8 +6,46 @@ There is more documentation available in the Valar readme, including an [Entity�
 ### configuration
 
 An example configuration file is at [config/example_config.json](config/example_config.json). 
-You'll need to fill in the username and password for the database and SSH connection. In other words, ask Douglas for access. _**Do not** put a username and/or password anywhere that's web-accessible (including Github), with the exception of a password manager with 2-factor authentication._
+I recommend downloading it to `$HOME/valarpy_configs/read_only.json`
+You’ll need to fill in the username and password for the database connection. In other words, ask Douglas for access. _**Do not** put a username and/or password anywhere that’s web-accessible (including Github), with the exception of a password manager with 2-factor authentication._
+In addition, you’ll also need to set up SSH keys for Valinor.
 
+Valarpy connects to Valar through an SSH tunnel; the database is not accessible remotely.
+There are two modes of connection: Valarpy can either use an existing SSH tunnel or create its own.
+
+##### existing tunnel
+
+Replacing _83419_ with a number of your choosing, create the tunnel using:
+```bash
+ssh -L 83419:localhost:3306 valinor.ucsf.edu`
+```
+Note that after running it your shell is now on Valinor. You will need to leave this tunnel open while connecting to Valar.
+Update your config file, replacing `ssh_host: "valinor.ucsf.edu"` with `local_bind_port: 83419`.
+
+This mode will allow you to use the same tunnel with other languages and to connect to Valar natively.
+For example, you can connect to MariaDB from a local terminal using:
+```bash
+mysql -u dbusername -P 83419 -p
+```
+
+##### new tunnel
+
+If you only use Python, this is slightly preferable because it randomizes the tunnel port. That’s a very minor security benefit, however.
+For this mode, just leave `ssh_host: "valinor.ucsf.edu"`
+
+
+### simplest example
+
+```python
+from valarpy.Valar import Valar
+
+with Valar():
+# you MUST import this AFTER setting global_connection.db
+	from valarpy.model import *
+	print("# of projects: {}".format(len(Projects.select())))
+```
+
+The sections below show more flexible usage.
 
 ### example usage with Peewee
 

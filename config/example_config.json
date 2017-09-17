@@ -1,6 +1,4 @@
 {
-  "ssh_username": "user",
-  "ssh_password": "password",
   "ssh_host": "valinor.ucsf.edu",
   "ssh_port": 22,
   "db_username": "user",

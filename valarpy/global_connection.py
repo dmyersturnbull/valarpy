@@ -4,27 +4,16 @@ import logging
 from typing import Dict, Union
 from valarpy.connection import Connection
 
-_valar_config_var = 'VALARPY_CONFIG'
-
 db = None
 
 class GlobalConnection(Connection):
 
 	@classmethod
-	def from_env_var(cls):
-		if _valar_config_var in os.environ:
-			return GlobalConnection.from_json(os.environ[_valar_config_var])
-		else:
-			raise ValueError("Environment variable {} not set".format(_valar_config_var))
-
-	@classmethod
 	def from_json(cls, config_path: str):
 		if os.path.isfile(config_path) and os.access(config_path, os.R_OK):
-			logging.info("Using Valar connection from {}='{}'".format(_valar_config_var, config_path))
+			logging.info("Using Valar connection from '{}'".format(config_path))
 			with open(config_path) as jscfg:
 				params = json.load(jscfg)  # type: Dict[str, Union[str, int, None]]
-				if 'ssh_username' not in params: params['ssh_username'] = None
-				if 'ssh_password' not in params: params['ssh_password'] = None
 				return cls(**params)
 		else:
 			raise ValueError("{} does not exist, is not a file, or is not readable".format(config_path))
