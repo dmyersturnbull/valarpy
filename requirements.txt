@@ -2,3 +2,4 @@ PyMySQL == 0.7.11
 peewee == 2.10.1
 sshtunnel == 0.1.2
 numpy == 1.13.1
+git+https://github.com/kokellab/klgists.git@0.0.16#egg=klgists
