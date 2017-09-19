@@ -15,17 +15,22 @@ There are two modes of connection: Valarpy can either use an existing SSH tunnel
 
 ##### existing tunnel
 
-Replacing _83419_ with a number of your choosing, create the tunnel using:
+Replacing _53419_ with a number of your choosing, create the tunnel using:
 ```bash
-ssh -L 83419:localhost:3306 valinor.ucsf.edu`
+ssh -L 53419:localhost:3306 valinor.ucsf.edu
 ```
 Note that after running it your shell is now on Valinor. You will need to leave this tunnel open while connecting to Valar.
-Update your config file, replacing `ssh_host: "valinor.ucsf.edu"` with `local_bind_port: 83419`.
+Update your config file, replacing `ssh_host: "valinor.ucsf.edu"` with `local_bind_port: 53419`.
+You can of course alias in your `~/.zshrc`. You can add a `valinor-tunnel` alias by running:
+```bash
+echo "export valinor_tunnel_port=53419" >> ~/.zshrc
+echo "alias valinor-tunnel='ssh -L $valinor_tunnel_port:localhost:3306 valinor.ucsf.edu'" >> ~/.zshrc
+```
 
 This mode will allow you to use the same tunnel with other languages and to connect to Valar natively.
 For example, you can connect to MariaDB from a local terminal using:
 ```bash
-mysql -u dbusername -P 83419 -p
+mysql -u dbusername -P $valinor_tunnel_port -p
 ```
 
 ##### new tunnel
