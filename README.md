@@ -1,9 +1,24 @@
 # [valarpy](https://github.com/kokellab/valarpy)
-Python code to talk to the Kokel Lab database, [Valar](https://github.com/kokellab/valar). Import this into other projects.
+Python code to talk to the Kokel Lab database, [Valar](https://github.com/kokellab/valar). (Valinor is the webserver and home of valar.) 
+
+### Set up your ssh key as described in [How To Set Up SSH Keys | DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2)
+step 1
+```
+ssh-keygen -t rsa
+```
+step 2
+- don't use the passphrase step
+```
+Enter file in which to save the key (/home/demo/.ssh/id_rsa):
+```
+step 3
+```
+ssh-copy-id yourname@valinor@ucsf.edu
+```
 
 There is more documentation available in the Valar readme, including an [Entity–Relationship Diagram](https://github.com/kokellab/valar/blob/alttables/docs/erd/valar\_schema.png), where the lines are [foreign keys](https://en.wikipedia.org/wiki/Foreign_key) whose targets are denoted as forks.
 
-### configuration
+### Connect to valinor
 
 An example configuration file is at [config/example_config.json](config/example_config.json). 
 I recommend downloading it to `$HOME/valarpy_configs/read_only.json`
@@ -13,16 +28,20 @@ In addition, you’ll also need to set up SSH keys for Valinor.
 Valarpy connects to Valar through an SSH tunnel; the database is not accessible remotely.
 There are two modes of connection: Valarpy can either use an existing SSH tunnel or create its own.
 
-##### existing tunnel
+##### set up new tunnel
 
-Replacing _53419_ with a number of your choosing, create the tunnel using:
+Replacing _53419_ with a number of your choosing, 
+The port can't be _anything_. It needs to be between 1025 and 65535, and I recommend 49152–65535.
+
+create the tunnel using :
 ```bash
 ssh -L 53419:localhost:3306 valinor.ucsf.edu
 ```
-The port can't be _anything_. It needs to be between 1025 and 65535, and I recommend 49152–65535.
 
-Note that after running it your shell is now on Valinor. You will need to leave this tunnel open while connecting to Valar.
-Update your config file, replacing `ssh_host: "valinor.ucsf.edu"` with `local_bind_port: 53419`.
+Note that after running it your shell is now on Valinor. 
+
+You will need to leave this tunnel open while connecting to Valar. As long the terminal window connection is open, you can access valar through your notebooks.
+
 You can of course alias in your `~/.zshrc`. You can add a `valinor-tunnel` alias by running:
 ```bash
 echo "export valinor_tunnel_port=53419" >> ~/.zshrc
@@ -35,7 +54,7 @@ For example, you can connect to MariaDB from a local terminal using:
 mysql -u dbusername -P $valinor_tunnel_port -p
 ```
 
-##### new tunnel
+##### Optional: choose to update your config file to randomize your tunnel port
 
 If you only use Python, this is slightly preferable because it randomizes the tunnel port. That’s a very minor security benefit, however.
 For this mode, just leave `ssh_host: "valinor.ucsf.edu"`
