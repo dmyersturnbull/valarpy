@@ -1,24 +1,31 @@
 # [valarpy](https://github.com/kokellab/valarpy)
 Python code to talk to the Kokel Lab database, [Valar](https://github.com/kokellab/valar). (Valinor is the webserver and home of valar.) 
 
-### Set up your ssh key as described in [How To Set Up SSH Keys | DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2)
-step 1
-```
-ssh-keygen -t rsa
-```
-step 2
-- don't use the passphrase step
-```
-Enter file in which to save the key (/home/demo/.ssh/id_rsa):
-```
-step 3
-```
-ssh-copy-id yourname@valinor@ucsf.edu
-```
-
 There is more documentation available in the Valar readme, including an [Entity–Relationship Diagram](https://github.com/kokellab/valar/blob/alttables/docs/erd/valar\_schema.png), where the lines are [foreign keys](https://en.wikipedia.org/wiki/Foreign_key) whose targets are denoted as forks.
 
-### Connect to valinor
+### set up SSH keys
+
+Set up your SSH keys as described in [How To Set Up SSH Keys | DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2). You will temporarily need password authentication for this step; ask Douglas to enable this for you.
+
+1. Run `ssh-keygen -t rsa` (and hit enter without using a passphrase)
+2. Enter file in which to save the key (`/home/demo/.ssh/id_rsa`):
+3. Run `ssh-copy-id yourname@valinor@ucsf.edu` to let Valinor know who you are
+4. Open the file `~/.ssh/config` in a text editor, and include these lines (deleting any duplicate sections):
+```
+Host valinor valinor.ucsf.edu
+HostName valinor.ucsf.edu
+IdentityFile ~/.ssh/id_rsa
+User <yourusername>
+
+Host github github.com
+HostName github.com
+IdentityFile ~/.ssh/github-rsa
+User <your-github-email-address>
+```
+
+You can now type `ssh valinor` or `ssh valinor.ucsf.edu` to log in without a password.
+
+### connect to Valinor
 
 An example configuration file is at [config/example_config.json](config/example_config.json). 
 I recommend downloading it to `$HOME/valarpy_configs/read_only.json`
