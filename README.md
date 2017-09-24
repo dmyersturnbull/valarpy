@@ -49,10 +49,10 @@ Note that after running it your shell is now on Valinor.
 
 You will need to leave this tunnel open while connecting to Valar. As long the terminal window connection is open, you can access valar through your notebooks.
 
-You can of course alias in your `~/.zshrc`. You can add a `valinor-tunnel` alias by running:
+You can of course alias in your `~/.shell-common`. Adding these lines will provide a `valinor-tunnel` alias:
 ```bash
-echo "export valinor_tunnel_port=53419" >> ~/.zshrc
-echo "alias valinor-tunnel='ssh -L ${valinor_tunnel_port}:localhost:3306 valinor.ucsf.edu'" >> ~/.zshrc
+export valinor_tunnel_port=53419
+alias valinor-tunnel='ssh -L ${valinor_tunnel_port}:localhost:3306 valinor.ucsf.edu'
 ```
 
 This mode will allow you to use the same tunnel with other languages and to connect to Valar natively.
