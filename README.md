@@ -132,6 +132,14 @@ from valarpy.model import *  # you MUST import this AFTER setting global_connect
 
 The database connection and SSH tunnels will hopefully be closed when Jupyter exits. You can also close bith using `db.close()`.
 
+### connecting from home
+
+The best way to use the database from home is to host a notebook server on your work computer that you can view from any computer you wish. 
+[This guide](http://jupyter-notebook.readthedocs.io/en/stable/public_server.html) covers how to set this up.
+
+[This is a general schematic of how this process works once set up](https://github.com/kokellab/valar/blob/master/docs/jupyter-nb_server_overview.png)
+
+
 ### notes about tables
 
 Assay frames and features (such as MI) are stored as MySQL binary `blob`s.
