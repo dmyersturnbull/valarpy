@@ -37,7 +37,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
@@ -468,6 +468,35 @@ class ControlTypes(BaseModel):
     class Meta:
         db_table = 'control_types'
 
+class Wells(BaseModel):
+    approx_n_fish = IntegerField(index=True, null=True)
+    control_type = ForeignKeyField(db_column='control_type', null=True, rel_model=ControlTypes, to_field='id')
+    created = DateTimeField()
+    days_post_fertilization = IntegerField()
+    fish_variant = ForeignKeyField(db_column='fish_variant_id', null=True, rel_model=FishVariants, to_field='id')
+    plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
+    well_group = IntegerField(index=True, null=True)
+    well_index = IntegerField(index=True)
+
+    class Meta:
+        db_table = 'wells'
+        indexes = (
+            (('plate_run', 'well_index'), True),
+        )
+
+class Concerns(BaseModel):
+    annotator = ForeignKeyField(db_column='annotator_id', rel_model=Users, to_field='id')
+    assay = ForeignKeyField(db_column='assay_id', null=True, rel_model=Assays, to_field='id')
+    created = DateTimeField()
+    explanation = TextField(null=True)
+    level = CharField(index=True)
+    name = CharField(index=True, null=True)
+    plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
+    well = ForeignKeyField(db_column='well_id', null=True, rel_model=Wells, to_field='id')
+
+    class Meta:
+        db_table = 'concerns'
+
 class Features(BaseModel):
     created = DateTimeField()
     data_type = CharField()
@@ -487,47 +516,57 @@ class Genes(BaseModel):
     class Meta:
         db_table = 'genes'
 
-class HeronBindingModes(BaseModel):
-    created = DateTimeField()
-    name = CharField(unique=True)
-
-    class Meta:
-        db_table = 'heron_binding_modes'
-
-class HeronTargets(BaseModel):
-    external = CharField(db_column='external_id')
-    external_source = ForeignKeyField(db_column='external_source_id', rel_model=DataSources, to_field='id')
-    hgnc_gene_symbol = CharField(index=True, null=True)
-
-    class Meta:
-        db_table = 'heron_targets'
-        indexes = (
-            (('external_source', 'external'), True),
-        )
-
-class HeronBindings(BaseModel):
-    affinity = FloatField(null=True)
-    binding_mode = ForeignKeyField(db_column='binding_mode_id', null=True, rel_model=HeronBindingModes, to_field='id')
-    compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
-    external_source = ForeignKeyField(db_column='external_source_id', rel_model=DataSources, to_field='id')
-    target = ForeignKeyField(db_column='target_id', rel_model=HeronTargets, to_field='id')
-
-    class Meta:
-        db_table = 'heron_bindings'
-        indexes = (
-            (('compound', 'target'), False),
-            (('compound', 'target', 'binding_mode'), False),
-            (('compound', 'target', 'external_source'), False),
-            (('compound', 'target', 'external_source', 'binding_mode'), False),
-            (('external_source', 'compound', 'target', 'binding_mode'), True),
-        )
-
 class LorienConfigs(BaseModel):
     created = DateTimeField()
     notes = CharField(null=True)
 
     class Meta:
         db_table = 'lorien_configs'
+
+class MandosKeys(BaseModel):
+    data_source = ForeignKeyField(db_column='data_source_id', rel_model=DataSources, to_field='id')
+    external = CharField(db_column='external_id', index=True)
+
+    class Meta:
+        db_table = 'mandos_keys'
+        indexes = (
+            (('data_source', 'external'), True),
+        )
+
+class MandosModes(BaseModel):
+    created = DateTimeField()
+    kind = CharField()
+    name = CharField(unique=True)
+
+    class Meta:
+        db_table = 'mandos_modes'
+
+class MandosAssociations(BaseModel):
+    compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
+    data_source = ForeignKeyField(db_column='data_source_id', rel_model=DataSources, to_field='id')
+    external = CharField(db_column='external_id', index=True)
+    key = ForeignKeyField(db_column='key_id', rel_model=MandosKeys, to_field='id')
+    mode = ForeignKeyField(db_column='mode_id', null=True, rel_model=MandosModes, to_field='id')
+    value = CharField(null=True)
+
+    class Meta:
+        db_table = 'mandos_associations'
+        indexes = (
+            (('data_source', 'compound', 'key', 'mode'), True),
+        )
+
+class MandosChemInfo(BaseModel):
+    compound = IntegerField(db_column='compound_id')
+    created = DateTimeField()
+    data_source = ForeignKeyField(db_column='data_source_id', rel_model=DataSources, to_field='id')
+    name = CharField(index=True)
+    value = CharField(index=True)
+
+    class Meta:
+        db_table = 'mandos_chem_info'
+        indexes = (
+            (('name', 'data_source'), True),
+        )
 
 class Plasmids(BaseModel):
     ape_file = BlobField()  # auto-corrected to BlobField
@@ -576,22 +615,6 @@ class PlateRunInfo(BaseModel):
         db_table = 'plate_run_info'
         indexes = (
             (('plate_run', 'name'), True),
-        )
-
-class Wells(BaseModel):
-    approx_n_fish = IntegerField(index=True, null=True)
-    control_type = ForeignKeyField(db_column='control_type', null=True, rel_model=ControlTypes, to_field='id')
-    created = DateTimeField()
-    days_post_fertilization = IntegerField()
-    fish_variant = ForeignKeyField(db_column='fish_variant_id', null=True, rel_model=FishVariants, to_field='id')
-    plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
-    well_group = IntegerField(index=True, null=True)
-    well_index = IntegerField(index=True)
-
-    class Meta:
-        db_table = 'wells'
-        indexes = (
-            (('plate_run', 'well_index'), True),
         )
 
 class Rois(BaseModel):
