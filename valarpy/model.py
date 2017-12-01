@@ -37,7 +37,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
@@ -66,7 +66,7 @@ class Protocols(BaseModel):
     length = IntegerField(index=True)
     name = CharField(unique=True)
     notes = CharField(null=True)
-    template = ForeignKeyField(db_column='template_id', null=True, rel_model=TemplateAssays, to_field='id')
+    template = IntegerField(db_column='template_id', index=True, null=True)
 
     class Meta:
         db_table = 'protocols'
@@ -236,7 +236,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -331,6 +331,7 @@ class CarpProjects(BaseModel):
         db_table = 'carp_projects'
 
 class CarpTanks(BaseModel):
+    birthdate = DateField()
     created = DateTimeField()
     fish_variant = ForeignKeyField(db_column='fish_variant_id', rel_model=FishVariants, to_field='id')
     internal = CharField(db_column='internal_id', unique=True)
@@ -462,7 +463,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(index=True)
+    name = CharField(unique=True)
     positive = IntegerField(index=True)
 
     class Meta:
@@ -497,6 +498,16 @@ class Concerns(BaseModel):
     class Meta:
         db_table = 'concerns'
 
+class ConditionTypes(BaseModel):
+    created = DateTimeField()
+    creator = ForeignKeyField(db_column='creator', rel_model=Users, to_field='id')
+    description = CharField()
+    kind = CharField()
+    name = CharField(unique=True)
+
+    class Meta:
+        db_table = 'condition_types'
+
 class Features(BaseModel):
     created = DateTimeField()
     data_type = CharField()
@@ -515,6 +526,18 @@ class Genes(BaseModel):
 
     class Meta:
         db_table = 'genes'
+
+class Locations(BaseModel):
+    active = IntegerField()
+    created = DateTimeField()
+    description = CharField()
+    name = CharField(unique=True)
+    part_of = ForeignKeyField(db_column='part_of', null=True, rel_model='self', to_field='id')
+    purpose = CharField()
+    temporary = IntegerField()
+
+    class Meta:
+        db_table = 'locations'
 
 class LorienConfigs(BaseModel):
     created = DateTimeField()
