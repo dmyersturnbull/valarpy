@@ -37,7 +37,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -335,7 +335,6 @@ class CarpTanks(BaseModel):
     created = DateTimeField()
     fish_variant = ForeignKeyField(db_column='fish_variant_id', rel_model=FishVariants, to_field='id')
     internal = CharField(db_column='internal_id', unique=True)
-    name = CharField(unique=True)
     notes = TextField(null=True)
     project = ForeignKeyField(db_column='project_id', rel_model=CarpProjects, to_field='id')
 
@@ -475,7 +474,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(unique=True)
+    name = CharField(index=True)
     positive = IntegerField(index=True)
 
     class Meta:
