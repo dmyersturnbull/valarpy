@@ -99,7 +99,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -367,6 +367,18 @@ class CarpScans(BaseModel):
 
     class Meta:
         db_table = 'carp_scans'
+
+class CarpSystemData(BaseModel):
+    created = DateTimeField()
+    datetime_scanned = DateTimeField()
+    name = CharField()
+    value = CharField()
+
+    class Meta:
+        db_table = 'carp_system_data'
+        indexes = (
+            (('name', 'datetime_scanned'), True),
+        )
 
 class CarpTankTasks(BaseModel):
     created = DateTimeField()
