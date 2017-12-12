@@ -10,6 +10,13 @@ class BaseModel(Model):
     class Meta:
         database = database
 
+class ApiKeys(BaseModel):
+    name = CharField()
+    value = CharField()
+
+    class Meta:
+        db_table = 'api_keys'
+
 class Users(BaseModel):
     bcrypt_hash = CharField(index=True, null=True)
     created = DateTimeField()
@@ -388,6 +395,32 @@ class CarpTankTasks(BaseModel):
     class Meta:
         db_table = 'carp_tank_tasks'
 
+class Sensors(BaseModel):
+    blob_type = CharField(null=True)
+    created = DateTimeField()
+    data_type = CharField()
+    description = CharField(null=True)
+    n_between = IntegerField(null=True)
+    name = CharField(unique=True)
+
+    class Meta:
+        db_table = 'sensors'
+
+class ComponentChecks(BaseModel):
+    created = DateTimeField()
+    data = BlobField(null=True)  # auto-corrected to BlobField
+    datetime_scanned = DateTimeField()
+    name = CharField()
+    sauron_config = ForeignKeyField(db_column='sauron_config_id', rel_model=SauronConfigs, to_field='id')
+    sensor = ForeignKeyField(db_column='sensor_id', rel_model=Sensors, to_field='id')
+    value = CharField(null=True)
+
+    class Meta:
+        db_table = 'component_checks'
+        indexes = (
+            (('name', 'datetime_scanned'), True),
+        )
+
 class CompoundSources(BaseModel):
     created = DateTimeField()
     description = CharField(null=True)
@@ -687,17 +720,6 @@ class SauronxSubmissionParams(BaseModel):
         indexes = (
             (('sauronx_submission', 'name'), True),
         )
-
-class Sensors(BaseModel):
-    blob_type = CharField(null=True)
-    created = DateTimeField()
-    data_type = CharField()
-    description = CharField(null=True)
-    n_between = IntegerField(null=True)
-    name = CharField(unique=True)
-
-    class Meta:
-        db_table = 'sensors'
 
 class SensorData(BaseModel):
     floats = BlobField()  # auto-corrected to BlobField
