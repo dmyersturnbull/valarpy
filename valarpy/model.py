@@ -106,7 +106,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -406,6 +406,19 @@ class Sensors(BaseModel):
     class Meta:
         db_table = 'sensors'
 
+class Stimuli(BaseModel):
+    analog = IntegerField()
+    audio_file = ForeignKeyField(db_column='audio_file_id', null=True, rel_model=AudioFiles, to_field='id', unique=True)
+    created = DateTimeField()
+    default_color = CharField()
+    description = CharField(null=True)
+    name = CharField(unique=True)
+    rgb = BlobField(null=True)  # auto-corrected to BlobField
+    wavelength_nanometers = IntegerField(null=True)
+
+    class Meta:
+        db_table = 'stimuli'
+
 class ComponentChecks(BaseModel):
     created = DateTimeField()
     data = BlobField(null=True)  # auto-corrected to BlobField
@@ -413,6 +426,7 @@ class ComponentChecks(BaseModel):
     name = CharField()
     sauron_config = ForeignKeyField(db_column='sauron_config_id', rel_model=SauronConfigs, to_field='id')
     sensor = ForeignKeyField(db_column='sensor_id', rel_model=Sensors, to_field='id')
+    stimulus = ForeignKeyField(db_column='stimulus_id', null=True, rel_model=Stimuli, to_field='id')
     value = CharField(null=True)
 
     class Meta:
@@ -729,19 +743,6 @@ class SensorData(BaseModel):
 
     class Meta:
         db_table = 'sensor_data'
-
-class Stimuli(BaseModel):
-    analog = IntegerField()
-    audio_file = ForeignKeyField(db_column='audio_file_id', null=True, rel_model=AudioFiles, to_field='id', unique=True)
-    created = DateTimeField()
-    default_color = CharField()
-    description = CharField(null=True)
-    name = CharField(unique=True)
-    rgb = BlobField(null=True)  # auto-corrected to BlobField
-    wavelength_nanometers = IntegerField(null=True)
-
-    class Meta:
-        db_table = 'stimuli'
 
 class StimulusFrames(BaseModel):
     assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
