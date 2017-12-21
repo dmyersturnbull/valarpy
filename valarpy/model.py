@@ -106,7 +106,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -606,8 +606,10 @@ class LorienConfigs(BaseModel):
         db_table = 'lorien_configs'
 
 class MandosKeys(BaseModel):
+    created = DateTimeField()
     data_source = ForeignKeyField(db_column='data_source_id', rel_model=DataSources, to_field='id')
     external = CharField(db_column='external_id', index=True)
+    name = CharField(null=True)
 
     class Meta:
         db_table = 'mandos_keys'
@@ -617,6 +619,8 @@ class MandosKeys(BaseModel):
 
 class MandosModes(BaseModel):
     created = DateTimeField()
+    data_source = ForeignKeyField(db_column='data_source_id', rel_model=DataSources, to_field='id')
+    external = CharField(db_column='external_id', null=True)
     kind = CharField()
     name = CharField(unique=True)
 
@@ -626,7 +630,7 @@ class MandosModes(BaseModel):
 class MandosAssociations(BaseModel):
     compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
     data_source = ForeignKeyField(db_column='data_source_id', rel_model=DataSources, to_field='id')
-    external = CharField(db_column='external_id', index=True)
+    external = CharField(db_column='external_id', index=True, null=True)
     key = ForeignKeyField(db_column='key_id', rel_model=MandosKeys, to_field='id')
     mode = ForeignKeyField(db_column='mode_id', null=True, rel_model=MandosModes, to_field='id')
     value = CharField(null=True)
