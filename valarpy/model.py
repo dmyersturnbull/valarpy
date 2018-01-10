@@ -106,7 +106,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -243,7 +243,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -431,9 +431,6 @@ class ComponentChecks(BaseModel):
 
     class Meta:
         db_table = 'component_checks'
-        indexes = (
-            (('name', 'datetime_scanned'), True),
-        )
 
 class CompoundSources(BaseModel):
     created = DateTimeField()
@@ -550,7 +547,7 @@ class Concerns(BaseModel):
     explanation = TextField(null=True)
     level = CharField(index=True)
     name = CharField(index=True, null=True)
-    plate_run = ForeignKeyField(db_column='plate_run_id', rel_model=PlateRuns, to_field='id')
+    plate_run = ForeignKeyField(db_column='plate_run_id', null=True, rel_model=PlateRuns, to_field='id')
     submission = ForeignKeyField(db_column='submission_id', null=True, rel_model=SauronxSubmissions, to_field='id')
     well = ForeignKeyField(db_column='well_id', null=True, rel_model=Wells, to_field='id')
 
@@ -567,6 +564,23 @@ class ConditionTypes(BaseModel):
     class Meta:
         db_table = 'condition_types'
 
+class Constructs(BaseModel):
+    ape_file = BlobField()  # auto-corrected to BlobField
+    ape_file_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    box_number = IntegerField()
+    created = DateTimeField()
+    injection_mix = CharField(null=True)
+    kind = CharField()
+    tube_number = IntegerField()
+    use_case = CharField()
+    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
+
+    class Meta:
+        db_table = 'constructs'
+        indexes = (
+            (('box_number', 'tube_number'), True),
+        )
+
 class Features(BaseModel):
     created = DateTimeField()
     data_type = CharField()
@@ -578,13 +592,49 @@ class Features(BaseModel):
         db_table = 'features'
 
 class Genes(BaseModel):
+    ape_file = BlobField(null=True)  # auto-corrected to BlobField
+    ape_file_sha1 = BlobField(null=True)  # auto-corrected to BlobField
     created = DateTimeField()
     description = CharField(null=True)
+    name = CharField(null=True)
+    pub_link = CharField(null=True)
+    sequence = TextField(null=True)
     uniprot = CharField(db_column='uniprot_id', null=True, unique=True)
     zfin = CharField(db_column='zfin_id', null=True, unique=True)
 
     class Meta:
         db_table = 'genes'
+
+class GenesInConstructs(BaseModel):
+    construct = ForeignKeyField(db_column='construct_id', rel_model=Constructs, to_field='id')
+    gene = ForeignKeyField(db_column='gene_id', rel_model=Genes, to_field='id')
+
+    class Meta:
+        db_table = 'genes_in_constructs'
+        indexes = (
+            (('gene', 'construct'), True),
+        )
+
+class Mutations(BaseModel):
+    created = DateTimeField()
+    description = CharField(null=True)
+    endogenous_gene = ForeignKeyField(db_column='endogenous_gene_id', null=True, rel_model=Genes, to_field='id')
+    fish_variant = ForeignKeyField(db_column='fish_variant_id', null=True, rel_model=FishVariants, to_field='id')
+    plasmid = ForeignKeyField(db_column='plasmid_id', null=True, rel_model=Constructs, to_field='id')
+    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
+
+    class Meta:
+        db_table = 'mutations'
+
+class GenesInMutations(BaseModel):
+    gene = ForeignKeyField(db_column='gene_id', rel_model=Genes, to_field='id')
+    mutation = ForeignKeyField(db_column='mutation_id', rel_model=Mutations, to_field='id')
+
+    class Meta:
+        db_table = 'genes_in_mutations'
+        indexes = (
+            (('gene', 'mutation'), True),
+        )
 
 class Locations(BaseModel):
     active = IntegerField()
@@ -654,37 +704,10 @@ class MandosChemInfo(BaseModel):
             (('name', 'data_source'), True),
         )
 
-class Plasmids(BaseModel):
-    ape_file = BlobField()  # auto-corrected to BlobField
-    ape_file_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
-    box_number = IntegerField()
-    created = DateTimeField()
-    gene = ForeignKeyField(db_column='gene_id', null=True, rel_model=Genes, to_field='id')
-    tube_number = IntegerField()
-    use_case = CharField()
-    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
-
-    class Meta:
-        db_table = 'plasmids'
-        indexes = (
-            (('box_number', 'tube_number'), True),
-        )
-
-class Mutations(BaseModel):
-    created = DateTimeField()
-    description = CharField(null=True)
-    endogenous_gene = ForeignKeyField(db_column='endogenous_gene_id', null=True, rel_model=Genes, to_field='id')
-    fish_variant = ForeignKeyField(db_column='fish_variant_id', null=True, rel_model=FishVariants, to_field='id')
-    plasmid = ForeignKeyField(db_column='plasmid_id', null=True, rel_model=Plasmids, to_field='id')
-    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
-
-    class Meta:
-        db_table = 'mutations'
-
 class Oligos(BaseModel):
     created = DateTimeField()
     mutation = ForeignKeyField(db_column='mutation_id', null=True, rel_model=Mutations, to_field='id')
-    plasmid = ForeignKeyField(db_column='plasmid_id', null=True, rel_model=Plasmids, to_field='id')
+    plasmid = ForeignKeyField(db_column='plasmid_id', null=True, rel_model=Constructs, to_field='id')
     sequence = TextField()
     used_for = TextField()
     user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
