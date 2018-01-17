@@ -23,6 +23,7 @@ IdentityFile ~/.ssh/github-rsa
 User <your-github-email-address>
 ```
 replace User info including '<...>'
+
 You can now type `ssh valinor` or `ssh valinor.ucsf.edu` to log in without a password.
 
 ### connect to Valinor
