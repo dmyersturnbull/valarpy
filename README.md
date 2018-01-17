@@ -8,7 +8,7 @@ There is more documentation available in the Valar readme, including an [Entityâ
 Set up your SSH keys as described in [How To Set Up SSH Keys | DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2). You will temporarily need password authentication for this step; ask Douglas to enable this for you.
 
 1. Run `ssh-keygen -t rsa` (and hit enter without using a passphrase)
-2. Enter file in which to save the key (`/home/demo/.ssh/id_rsa`):
+2. Enter file in which to save the key (`/home/demo/.ssh/id_rsa`) or (`/Users/you/.ssh/id_rsa`):
 3. Run `ssh-copy-id yourname@valinor@ucsf.edu` to let Valinor know who you are
 4. Open the file `~/.ssh/config` in a text editor, and include these lines (deleting any duplicate sections):
 ```
