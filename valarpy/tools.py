@@ -1,5 +1,5 @@
 
-import json, sys, ast
+import json, sys, ast, numbers
 from datetime import date, datetime
 from typing import List, Callable, Any, Union, Optional, Dict
 
@@ -32,7 +32,7 @@ class Tools:
 	def fetch(thing_class: peewee.Model, thing: Union[any, int, str], name_column: str = 'name'):
 		if isinstance(thing, peewee.Model):
 			found = thing
-		elif isinstance(thing, int):
+		elif isinstance(thing, int) or issubclass(type(thing), numbers.Integral):
 			found = thing_class.select().where(thing_class.id == thing).first()
 		elif isinstance(thing, str) and hasattr(thing_class, name_column):
 			found = thing_class.select().where(getattr(thing_class, name_column) == thing).first()
