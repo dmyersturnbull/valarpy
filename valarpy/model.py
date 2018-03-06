@@ -243,7 +243,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -338,7 +338,8 @@ class CarpProjects(BaseModel):
         db_table = 'carp_projects'
 
 class CarpTanks(BaseModel):
-    birthdate = DateField()
+    alive = IntegerField()
+    birthdate = DateField(index=True)
     created = DateTimeField()
     fish_variant = ForeignKeyField(db_column='fish_variant_id', rel_model=FishVariants, to_field='id')
     internal = CharField(db_column='internal_id', unique=True)
@@ -367,12 +368,15 @@ class CarpScans(BaseModel):
     created = DateTimeField()
     datetime_scanned = DateTimeField()
     person_scanned = ForeignKeyField(db_column='person_scanned_id', rel_model=Users, to_field='id')
-    scan_type = CharField()
-    scan_value = CharField()
+    scan_type = CharField(index=True)
+    scan_value = CharField(index=True)
     tank = ForeignKeyField(db_column='tank_id', rel_model=CarpTanks, to_field='id')
 
     class Meta:
         db_table = 'carp_scans'
+        indexes = (
+            (('tank', 'scan_type', 'datetime_scanned'), True),
+        )
 
 class CarpSystemData(BaseModel):
     created = DateTimeField()
@@ -501,9 +505,6 @@ class CompoundIds(BaseModel):
 
     class Meta:
         db_table = 'compound_ids'
-        indexes = (
-            (('ordered_compound', 'data_source'), True),
-        )
 
 class CompoundNames(BaseModel):
     compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
@@ -596,8 +597,8 @@ class Genes(BaseModel):
     ape_file_sha1 = BlobField(null=True)  # auto-corrected to BlobField
     created = DateTimeField()
     description = CharField(null=True)
-    name = CharField(null=True)
-    pub_link = CharField(null=True)
+    name = CharField(index=True, null=True)
+    pub_link = CharField(index=True, null=True)
     sequence = TextField(null=True)
     uniprot = CharField(db_column='uniprot_id', null=True, unique=True)
     zfin = CharField(db_column='zfin_id', null=True, unique=True)
@@ -670,12 +671,16 @@ class MandosKeys(BaseModel):
 class MandosModes(BaseModel):
     created = DateTimeField()
     data_source = ForeignKeyField(db_column='data_source_id', rel_model=DataSources, to_field='id')
-    external = CharField(db_column='external_id', null=True)
+    external = CharField(db_column='external_id', index=True, null=True)
     kind = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
 
     class Meta:
         db_table = 'mandos_modes'
+        indexes = (
+            (('external', 'data_source'), True),
+            (('name', 'data_source'), True),
+        )
 
 class MandosAssociations(BaseModel):
     compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
@@ -701,7 +706,7 @@ class MandosChemInfo(BaseModel):
     class Meta:
         db_table = 'mandos_chem_info'
         indexes = (
-            (('name', 'data_source'), True),
+            (('name', 'data_source', 'compound'), True),
         )
 
 class Oligos(BaseModel):
@@ -728,7 +733,7 @@ class PlateRunInfo(BaseModel):
 
 class Rois(BaseModel):
     lorien_commit_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
-    lorien_config = IntegerField(index=True, null=True)
+    lorien_config = ForeignKeyField(db_column='lorien_config', null=True, rel_model=LorienConfigs, to_field='id')
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
     x0 = IntegerField()
     x1 = IntegerField()
