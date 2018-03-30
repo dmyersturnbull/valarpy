@@ -44,7 +44,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
@@ -106,7 +106,7 @@ class Cameras(BaseModel):
     created = DateTimeField(null=True)
     description = TextField(null=True)
     model = CharField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     serial_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -275,7 +275,7 @@ class CarpTasks(BaseModel):
     description = TextField(null=True)
     failure_condition = CharField(null=True)
     failure_target = IntegerField(db_column='failure_target_id', index=True, null=True)
-    name = CharField(unique=True)
+    name = CharField(index=True)
     notes = TextField(null=True)
     project_type = IntegerField(index=True)
     success_condition = CharField(null=True)
@@ -283,6 +283,9 @@ class CarpTasks(BaseModel):
 
     class Meta:
         db_table = 'carp_tasks'
+        indexes = (
+            (('name', 'project_type'), True),
+        )
 
 class CarpDataTypes(BaseModel):
     description = TextField(null=True)
@@ -519,7 +522,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(unique=True)
+    name = CharField(index=True)
     positive = IntegerField(index=True)
 
     class Meta:
@@ -707,6 +710,32 @@ class MandosChemInfo(BaseModel):
         db_table = 'mandos_chem_info'
         indexes = (
             (('name', 'data_source', 'compound'), True),
+        )
+
+class MandosKeyTags(BaseModel):
+    created = DateTimeField()
+    name = CharField()
+    object = ForeignKeyField(db_column='object', rel_model=MandosKeys, to_field='id')
+    ref = ForeignKeyField(db_column='ref', rel_model=DataSources, to_field='id')
+    value = CharField(index=True)
+
+    class Meta:
+        db_table = 'mandos_key_tags'
+        indexes = (
+            (('object', 'ref', 'name', 'value'), True),
+        )
+
+class MandosRuleTags(BaseModel):
+    created = DateTimeField()
+    name = CharField()
+    ref = ForeignKeyField(db_column='ref', rel_model=DataSources, to_field='id')
+    rule = ForeignKeyField(db_column='rule', rel_model=MandosAssociations, to_field='id')
+    value = CharField(index=True)
+
+    class Meta:
+        db_table = 'mandos_rule_tags'
+        indexes = (
+            (('rule', 'ref', 'name', 'value'), True),
         )
 
 class Oligos(BaseModel):
