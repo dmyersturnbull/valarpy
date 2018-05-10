@@ -65,7 +65,7 @@ class AssayParams(BaseModel):
         )
 
 class Protocols(BaseModel):
-    assays_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    assays_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
     created = DateTimeField()
     description = CharField(null=True)
@@ -243,7 +243,7 @@ class SauronxSubmissions(BaseModel):
 
 class SauronxTomls(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -270,6 +270,15 @@ class PlateRuns(BaseModel):
     class Meta:
         db_table = 'plate_runs'
 
+class CarpProjectTypes(BaseModel):
+    base_type = CharField()
+    description = TextField(null=True)
+    name = CharField(unique=True)
+    primary_user = ForeignKeyField(db_column='primary_user', null=True, rel_model=Users, to_field='id')
+
+    class Meta:
+        db_table = 'carp_project_types'
+
 class CarpTasks(BaseModel):
     days_to_wait = IntegerField(null=True)
     description = TextField(null=True)
@@ -277,7 +286,7 @@ class CarpTasks(BaseModel):
     failure_target = IntegerField(db_column='failure_target_id', index=True, null=True)
     name = CharField(index=True)
     notes = TextField(null=True)
-    project_type = IntegerField(index=True)
+    project_type = ForeignKeyField(db_column='project_type', rel_model=CarpProjectTypes, to_field='id')
     success_condition = CharField(null=True)
     success_target = IntegerField(db_column='success_target_id', index=True, null=True)
 
@@ -318,15 +327,6 @@ class FishVariants(BaseModel):
 
     class Meta:
         db_table = 'fish_variants'
-
-class CarpProjectTypes(BaseModel):
-    base_type = CharField()
-    description = TextField(null=True)
-    name = CharField(unique=True)
-    primary_user = ForeignKeyField(db_column='primary_user', null=True, rel_model=Users, to_field='id')
-
-    class Meta:
-        db_table = 'carp_project_types'
 
 class CarpProjects(BaseModel):
     ancestor = ForeignKeyField(db_column='ancestor_id', null=True, rel_model='self', to_field='id')
@@ -369,7 +369,7 @@ class CarpData(BaseModel):
 
 class CarpScans(BaseModel):
     created = DateTimeField()
-    datetime_scanned = DateTimeField()
+    datetime_scanned = DateTimeField(index=True)
     person_scanned = ForeignKeyField(db_column='person_scanned_id', rel_model=Users, to_field='id')
     scan_type = CharField(index=True)
     scan_value = CharField(index=True)
@@ -553,6 +553,7 @@ class Concerns(BaseModel):
     name = CharField(index=True, null=True)
     plate_run = ForeignKeyField(db_column='plate_run_id', null=True, rel_model=PlateRuns, to_field='id')
     submission = ForeignKeyField(db_column='submission_id', null=True, rel_model=SauronxSubmissions, to_field='id')
+    value = CharField(null=True)
     well = ForeignKeyField(db_column='well_id', null=True, rel_model=Wells, to_field='id')
 
     class Meta:
