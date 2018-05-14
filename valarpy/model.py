@@ -45,6 +45,15 @@ class PlateTypes(BaseModel):
             (('n_rows', 'n_columns'), False),
         )
 
+class Plates(BaseModel):
+    created = DateTimeField()
+    datetime_plated = DateTimeField(index=True, null=True)
+    person_plated = ForeignKeyField(db_column='person_plated_id', rel_model=Users, to_field='id')
+    plate_type = ForeignKeyField(db_column='plate_type_id', null=True, rel_model=PlateTypes, to_field='id')
+
+    class Meta:
+        db_table = 'plates'
+
 class Batteries(BaseModel):
     assays_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     author = ForeignKeyField(db_column='author_id', null=True, rel_model=Users, to_field='id')
@@ -86,7 +95,6 @@ class TemplatePlates(BaseModel):
     hidden = IntegerField()
     name = CharField(unique=True)
     plate_type = ForeignKeyField(db_column='plate_type_id', rel_model=PlateTypes, to_field='id')
-    solvent_dose_type = CharField()
     specializes = ForeignKeyField(db_column='specializes', null=True, rel_model='self', to_field='id')
 
     class Meta:
@@ -94,6 +102,7 @@ class TemplatePlates(BaseModel):
 
 class Experiments(BaseModel):
     active = IntegerField(null=True)
+    battery = ForeignKeyField(db_column='battery_id', rel_model=Batteries, to_field='id')
     created = DateTimeField()
     creator = IntegerField(db_column='creator_id')
     default_acclimation_sec = IntegerField()
@@ -101,21 +110,10 @@ class Experiments(BaseModel):
     name = CharField(unique=True)
     notes = TextField(null=True)
     project = ForeignKeyField(db_column='project_id', rel_model=Superprojects, to_field='id')
-    protocol = ForeignKeyField(db_column='protocol_id', rel_model=Batteries, to_field='id')
     template_plate = ForeignKeyField(db_column='template_plate_id', null=True, rel_model=TemplatePlates, to_field='id')
 
     class Meta:
         db_table = 'experiments'
-
-class Plates(BaseModel):
-    created = DateTimeField()
-    datetime_fish_plated = DateTimeField(index=True, null=True)
-    person_plated = ForeignKeyField(db_column='person_plated_id', rel_model=Users, to_field='id')
-    plate_type = ForeignKeyField(db_column='plate_type_id', null=True, rel_model=PlateTypes, to_field='id')
-    project = ForeignKeyField(db_column='project_id', rel_model=Experiments, to_field='id')
-
-    class Meta:
-        db_table = 'plates'
 
 class Saurons(BaseModel):
     active = IntegerField(index=True)
@@ -138,16 +136,16 @@ class SauronConfigs(BaseModel):
         )
 
 class Submissions(BaseModel):
-    acclimation_seconds = IntegerField(null=True)
+    acclimation_sec = IntegerField(null=True)
+    continuing = ForeignKeyField(db_column='continuing_id', null=True, rel_model='self', to_field='id')
     created = DateTimeField()
     datetime_dosed = DateTimeField(null=True)
-    datetime_fish_plated = DateTimeField()
-    id_hash_hex = CharField(unique=True)
+    datetime_plated = DateTimeField()
+    description = CharField()
+    lookup_hash = CharField(unique=True)
     notes = TextField(null=True)
     person_plated = ForeignKeyField(db_column='person_plated_id', rel_model=Users, to_field='id')
     project = ForeignKeyField(db_column='project_id', rel_model=Experiments, to_field='id')
-    same_plate_submission = ForeignKeyField(db_column='same_plate_submission_id', null=True, rel_model='self', to_field='id')
-    short_description = CharField()
     user = ForeignKeyField(db_column='user_id', rel_model=Users, related_name='users_user_set', to_field='id')
 
     class Meta:
@@ -155,27 +153,28 @@ class Submissions(BaseModel):
 
 class ConfigFiles(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
         db_table = 'config_files'
 
 class Runs(BaseModel):
-    acclimation_seconds = IntegerField(index=True, null=True)
+    acclimation_sec = IntegerField(index=True, null=True)
+    config_file = ForeignKeyField(db_column='config_file_id', null=True, rel_model=ConfigFiles, to_field='id')
     created = DateTimeField()
     datetime_dosed = DateTimeField(index=True, null=True)
     datetime_run = DateTimeField(index=True)
     description = CharField()
     experiment = ForeignKeyField(db_column='experiment_id', rel_model=Experiments, to_field='id')
     experimentalist = ForeignKeyField(db_column='experimentalist_id', rel_model=Users, to_field='id')
-    incubation_minutes = IntegerField(index=True, null=True)
+    incubation_min = IntegerField(index=True, null=True)
+    log_file = IntegerField(db_column='log_file_id', index=True, null=True)
     name = CharField(index=True)
     notes = TextField(null=True)
     plate = ForeignKeyField(db_column='plate_id', rel_model=Plates, to_field='id')
     sauron_config = ForeignKeyField(db_column='sauron_config_id', rel_model=SauronConfigs, to_field='id')
     sauronx_submission = ForeignKeyField(db_column='sauronx_submission', null=True, rel_model=Submissions, to_field='id')
-    sauronx_toml = ForeignKeyField(db_column='sauronx_toml_id', null=True, rel_model=ConfigFiles, to_field='id')
     tag = CharField()
 
     class Meta:
@@ -220,9 +219,9 @@ class GeneticVariants(BaseModel):
     created = DateTimeField()
     creator = ForeignKeyField(db_column='creator_id', null=True, rel_model=Users, to_field='id')
     date_created = DateField(null=True)
-    father_fish_variant = ForeignKeyField(db_column='father_fish_variant_id', null=True, rel_model='self', to_field='id')
+    father = ForeignKeyField(db_column='father_id', null=True, rel_model='self', to_field='id')
     lineage_type = CharField(index=True, null=True)
-    mother_fish_variant = ForeignKeyField(db_column='mother_fish_variant_id', null=True, rel_model='self', related_name='genetic_variants_mother_fish_variant_set', to_field='id')
+    mother = ForeignKeyField(db_column='mother_id', null=True, rel_model='self', related_name='genetic_variants_mother_set', to_field='id')
     name = CharField(unique=True)
     notes = TextField(null=True)
 
@@ -234,7 +233,7 @@ class Wells(BaseModel):
     control_type = ForeignKeyField(db_column='control_type', null=True, rel_model=ControlTypes, to_field='id')
     created = DateTimeField()
     n = IntegerField(index=True)
-    plate_run = IntegerField(db_column='plate_run_id', index=True)
+    run = ForeignKeyField(db_column='run_id', rel_model=Runs, to_field='id')
     variant = ForeignKeyField(db_column='variant_id', null=True, rel_model=GeneticVariants, to_field='id')
     well_group = CharField(index=True, null=True)
     well_index = IntegerField(index=True)
@@ -242,14 +241,14 @@ class Wells(BaseModel):
     class Meta:
         db_table = 'wells'
         indexes = (
-            (('plate_run', 'well_index'), True),
+            (('run', 'well_index'), True),
         )
 
 class Annotations(BaseModel):
     annotator = ForeignKeyField(db_column='annotator_id', rel_model=Users, to_field='id')
     assay = ForeignKeyField(db_column='assay_id', null=True, rel_model=Assays, to_field='id')
     created = DateTimeField()
-    explanation = TextField(null=True)
+    description = TextField(null=True)
     level = CharField(index=True)
     name = CharField(index=True, null=True)
     run = ForeignKeyField(db_column='run_id', null=True, rel_model=Runs, to_field='id')
@@ -280,13 +279,13 @@ class AssayParams(BaseModel):
 
 class AssayPositions(BaseModel):
     assay = ForeignKeyField(db_column='assay_id', rel_model=Assays, to_field='id')
-    protocol = ForeignKeyField(db_column='protocol_id', rel_model=Batteries, to_field='id')
+    battery = ForeignKeyField(db_column='battery_id', rel_model=Batteries, to_field='id')
     start = IntegerField(index=True)
 
     class Meta:
         db_table = 'assay_positions'
         indexes = (
-            (('protocol', 'assay', 'start'), True),
+            (('battery', 'assay', 'start'), True),
         )
 
 class AudioFiles(BaseModel):
@@ -303,7 +302,7 @@ class AudioFiles(BaseModel):
 
 class Refs(BaseModel):
     created = DateTimeField()
-    date_time_downloaded = DateTimeField(null=True)
+    datetime_downloaded = DateTimeField(null=True)
     description = CharField(null=True)
     external_version = CharField(null=True)
     name = CharField(index=True)
@@ -356,10 +355,10 @@ class Batches(BaseModel):
         )
 
 class BatchLabels(BaseModel):
+    batch = ForeignKeyField(db_column='batch_id', rel_model=Batches, to_field='id')
     created = DateTimeField()
-    data_source = ForeignKeyField(db_column='data_source_id', rel_model=Refs, to_field='id')
-    external = CharField(db_column='external_id', index=True)
-    ordered_compound = ForeignKeyField(db_column='ordered_compound_id', rel_model=Batches, to_field='id')
+    name = CharField(index=True)
+    ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
 
     class Meta:
         db_table = 'batch_labels'
@@ -438,12 +437,10 @@ class CarpData(BaseModel):
     data_task = ForeignKeyField(db_column='data_task_id', rel_model=CarpDataTasks, to_field='id')
     external_uri = TextField(null=True)
     father_tank = ForeignKeyField(db_column='father_tank', rel_model=CarpTanks, to_field='id')
-    file_blob = BlobField(null=True)  # auto-corrected to BlobField
-    file_blob_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
     mother_tank = ForeignKeyField(db_column='mother_tank', rel_model=CarpTanks, related_name='carp_tanks_mother_tank_set', to_field='id')
     notes = TextField(null=True)
     person_collected = ForeignKeyField(db_column='person_collected', rel_model=Users, to_field='id')
-    plate_run = IntegerField(db_column='plate_run_id', index=True, null=True)
+    run = ForeignKeyField(db_column='run_id', null=True, rel_model=Runs, to_field='id')
 
     class Meta:
         db_table = 'carp_data'
@@ -523,8 +520,8 @@ class ComponentChecks(BaseModel):
 class CompoundLabels(BaseModel):
     compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
     created = DateTimeField()
-    data_source = ForeignKeyField(db_column='data_source_id', rel_model=Refs, to_field='id')
     name = CharField()
+    ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
 
     class Meta:
         db_table = 'compound_labels'
@@ -582,9 +579,9 @@ class GeneticEvents(BaseModel):
     created = DateTimeField()
     description = CharField(null=True)
     endogenous_gene = ForeignKeyField(db_column='endogenous_gene_id', null=True, rel_model=Genes, to_field='id')
-    fish_variant = ForeignKeyField(db_column='fish_variant_id', null=True, rel_model=GeneticVariants, to_field='id')
     plasmid = ForeignKeyField(db_column='plasmid_id', null=True, rel_model=GeneticConstructs, to_field='id')
     user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
+    variant = ForeignKeyField(db_column='variant_id', null=True, rel_model=GeneticVariants, to_field='id')
 
     class Meta:
         db_table = 'genetic_events'
@@ -623,6 +620,7 @@ class Locations(BaseModel):
 
 class LogFiles(BaseModel):
     created = DateTimeField()
+    run = ForeignKeyField(db_column='run_id', rel_model=Runs, to_field='id')
     text = TextField()
     text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
 
@@ -639,26 +637,26 @@ class LorienConfigs(BaseModel):
 class MandosInfo(BaseModel):
     compound = IntegerField(db_column='compound_id')
     created = DateTimeField()
-    data_source = ForeignKeyField(db_column='data_source_id', rel_model=Refs, to_field='id')
     name = CharField(index=True)
+    ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
     value = CharField(index=True)
 
     class Meta:
         db_table = 'mandos_info'
         indexes = (
-            (('name', 'data_source', 'compound'), True),
+            (('name', 'ref', 'compound'), True),
         )
 
 class MandosObjects(BaseModel):
     created = DateTimeField()
-    data_source = ForeignKeyField(db_column='data_source_id', rel_model=Refs, to_field='id')
     external = CharField(db_column='external_id', index=True)
     name = CharField(null=True)
+    ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
 
     class Meta:
         db_table = 'mandos_objects'
         indexes = (
-            (('data_source', 'external'), True),
+            (('ref', 'external'), True),
         )
 
 class MandosObjectTags(BaseModel):
@@ -676,29 +674,29 @@ class MandosObjectTags(BaseModel):
 
 class MandosPredicates(BaseModel):
     created = DateTimeField()
-    data_source = ForeignKeyField(db_column='data_source_id', rel_model=Refs, to_field='id')
     external = CharField(db_column='external_id', index=True, null=True)
     kind = CharField()
     name = CharField(index=True)
+    ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
 
     class Meta:
         db_table = 'mandos_predicates'
         indexes = (
-            (('external', 'data_source'), True),
-            (('name', 'data_source'), True),
+            (('external', 'ref'), True),
+            (('name', 'ref'), True),
         )
 
 class MandosRules(BaseModel):
     compound = ForeignKeyField(db_column='compound_id', rel_model=Compounds, to_field='id')
-    data_source = ForeignKeyField(db_column='data_source_id', rel_model=Refs, to_field='id')
     external = CharField(db_column='external_id', index=True, null=True)
     object = ForeignKeyField(db_column='object_id', rel_model=MandosObjects, to_field='id')
     predicate = ForeignKeyField(db_column='predicate_id', rel_model=MandosPredicates, to_field='id')
+    ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
 
     class Meta:
         db_table = 'mandos_rules'
         indexes = (
-            (('data_source', 'compound', 'object', 'predicate'), True),
+            (('ref', 'compound', 'object', 'predicate'), True),
         )
 
 class MandosRuleTags(BaseModel):
@@ -773,26 +771,26 @@ class StimulusFrames(BaseModel):
 class SubmissionParams(BaseModel):
     name = CharField()
     param_type = CharField(null=True)
-    sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', rel_model=Submissions, to_field='id')
+    submission = ForeignKeyField(db_column='submission_id', rel_model=Submissions, to_field='id')
     value = CharField()
 
     class Meta:
         db_table = 'submission_params'
         indexes = (
-            (('sauronx_submission', 'name'), True),
+            (('submission', 'name'), True),
         )
 
 class SubmissionRecords(BaseModel):
     created = DateTimeField()
     datetime_modified = DateTimeField()
     sauron = ForeignKeyField(db_column='sauron_id', rel_model=Saurons, to_field='id')
-    sauronx_submission = ForeignKeyField(db_column='sauronx_submission_id', rel_model=Submissions, to_field='id')
     status = CharField(null=True)
+    submission = ForeignKeyField(db_column='submission_id', rel_model=Submissions, to_field='id')
 
     class Meta:
         db_table = 'submission_records'
         indexes = (
-            (('sauronx_submission', 'status', 'datetime_modified'), True),
+            (('submission', 'status', 'datetime_modified'), True),
         )
 
 class TemplateStimulusFrames(BaseModel):
@@ -805,8 +803,8 @@ class TemplateStimulusFrames(BaseModel):
         db_table = 'template_stimulus_frames'
 
 class TemplateTreatments(BaseModel):
+    batch_expression = CharField()
     dose_expression = CharField()
-    ordered_compound_expression = CharField()
     template_plate = ForeignKeyField(db_column='template_plate_id', rel_model=TemplatePlates, to_field='id')
     well_range_expression = CharField()
 
@@ -816,10 +814,10 @@ class TemplateTreatments(BaseModel):
 class TemplateWells(BaseModel):
     age_expression = CharField()
     control_type = ForeignKeyField(db_column='control_type', null=True, rel_model=ControlTypes, to_field='id')
-    fish_variant_expression = CharField()
     group_expression = CharField()
-    n_fish_expression = CharField()
+    n_expression = CharField()
     template_plate = ForeignKeyField(db_column='template_plate_id', rel_model=TemplatePlates, to_field='id')
+    variant_expression = CharField()
     well_range_expression = CharField()
 
     class Meta:
@@ -840,13 +838,13 @@ class WellFeatures(BaseModel):
         )
 
 class WellTreatments(BaseModel):
+    batch = ForeignKeyField(db_column='batch_id', rel_model=Batches, to_field='id')
     micromolar_dose = FloatField(null=True)
-    ordered_compound = ForeignKeyField(db_column='ordered_compound_id', rel_model=Batches, to_field='id')
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
 
     class Meta:
         db_table = 'well_treatments'
         indexes = (
-            (('well', 'ordered_compound'), True),
+            (('well', 'batch'), True),
         )
 
