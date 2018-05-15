@@ -118,7 +118,7 @@ class Experiments(BaseModel):
 class Saurons(BaseModel):
     active = IntegerField(index=True)
     created = DateTimeField()
-    number = IntegerField(index=True)
+    name = CharField(index=True)
 
     class Meta:
         db_table = 'saurons'
@@ -153,7 +153,7 @@ class Submissions(BaseModel):
 
 class ConfigFiles(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -174,7 +174,7 @@ class Runs(BaseModel):
     notes = TextField(null=True)
     plate = ForeignKeyField(db_column='plate_id', rel_model=Plates, to_field='id')
     sauron_config = ForeignKeyField(db_column='sauron_config_id', rel_model=SauronConfigs, to_field='id')
-    sauronx_submission = ForeignKeyField(db_column='sauronx_submission', null=True, rel_model=Submissions, to_field='id')
+    submission = ForeignKeyField(db_column='submission', null=True, rel_model=Submissions, to_field='id')
     tag = CharField()
 
     class Meta:
@@ -343,7 +343,7 @@ class Batches(BaseModel):
     ref = ForeignKeyField(db_column='ref_id', null=True, rel_model=Refs, to_field='id')
     solvent = ForeignKeyField(db_column='solvent_id', null=True, rel_model=Compounds, related_name='compounds_solvent_set', to_field='id')
     supplier_catalog_number = CharField(null=True)
-    supplier = IntegerField(db_column='supplier_id', index=True, null=True)
+    supplier = ForeignKeyField(db_column='supplier_id', null=True, rel_model=Suppliers, to_field='id')
     suspicious = IntegerField()
     tag = CharField(null=True)
     well_number = IntegerField(index=True, null=True)
