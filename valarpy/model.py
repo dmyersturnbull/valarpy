@@ -424,7 +424,7 @@ class CarpTanks(BaseModel):
     alive = IntegerField()
     birthdate = DateField(index=True)
     created = DateTimeField()
-    fish_variant = ForeignKeyField(db_column='fish_variant_id', rel_model=GeneticVariants, to_field='id')
+    variant = ForeignKeyField(db_column='variant_id', rel_model=GeneticVariants, to_field='id')
     internal = CharField(db_column='internal_id', unique=True)
     notes = TextField(null=True)
     project = ForeignKeyField(db_column='project_id', rel_model=CarpProjects, to_field='id')
