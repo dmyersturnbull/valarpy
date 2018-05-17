@@ -154,7 +154,7 @@ class Submissions(BaseModel):
 
 class ConfigFiles(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -196,7 +196,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
@@ -209,7 +209,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(index=True)
+    name = CharField(unique=True)
     positive = IntegerField(index=True)
 
     class Meta:
@@ -481,7 +481,7 @@ class CarpProjects(BaseModel):
     modified = DateTimeField()
     name = CharField(unique=True)
     owner = ForeignKeyField(db_column='owner_id', null=True, rel_model=Users, to_field='id')
-    project_type = ForeignKeyField(db_column='project_type_id', null=True, rel_model=CarpProjectTypes, to_field='id')
+    project_type = ForeignKeyField(db_column='project_type_id', rel_model=CarpProjectTypes, to_field='id')
 
     class Meta:
         db_table = 'carp_projects'
@@ -663,7 +663,7 @@ class GeneticConstructs(BaseModel):
     pmid = CharField(index=True, null=True)
     pub_link = CharField(null=True)
     raw_file = TextField()
-    raw_file_sha1 = CharField(index=True, null=True)
+    raw_file_sha1 = CharField(null=True, unique=True)
     reason_made = TextField(null=True)
     ref = IntegerField(db_column='ref_id')
     selection_marker = CharField(null=True)
