@@ -18,6 +18,21 @@ class Suppliers(BaseModel):
     class Meta:
         db_table = 'suppliers'
 
+class PlateTypes(BaseModel):
+    n_columns = IntegerField()
+    n_rows = IntegerField()
+    name = CharField(null=True)
+    opacity = CharField()
+    part_number = CharField(index=True, null=True)
+    supplier = ForeignKeyField(db_column='supplier_id', null=True, rel_model=Suppliers, to_field='id')
+    well_shape = CharField()
+
+    class Meta:
+        db_table = 'plate_types'
+        indexes = (
+            (('n_rows', 'n_columns'), False),
+        )
+
 class Users(BaseModel):
     bcrypt_hash = CharField(index=True, null=True)
     created = DateTimeField()
@@ -29,23 +44,6 @@ class Users(BaseModel):
     class Meta:
         db_table = 'users'
 
-class PlateTypes(BaseModel):
-    datetime_prepared = DateTimeField(null=True)
-    initial_microliters_per_well = FloatField()
-    n_columns = IntegerField()
-    n_rows = IntegerField()
-    opacity = CharField()
-    part_number = CharField(index=True, null=True)
-    set_up_by = ForeignKeyField(db_column='set_up_by', null=True, rel_model=Users, to_field='id')
-    supplier = ForeignKeyField(db_column='supplier_id', null=True, rel_model=Suppliers, to_field='id')
-    well_shape = CharField()
-
-    class Meta:
-        db_table = 'plate_types'
-        indexes = (
-            (('n_rows', 'n_columns'), False),
-        )
-
 class Plates(BaseModel):
     created = DateTimeField()
     datetime_plated = DateTimeField(index=True, null=True)
@@ -54,6 +52,21 @@ class Plates(BaseModel):
 
     class Meta:
         db_table = 'plates'
+
+class TransferPlates(BaseModel):
+    created = DateTimeField()
+    creator = ForeignKeyField(db_column='creator_id', rel_model=Users, to_field='id')
+    datetime_created = DateTimeField()
+    description = CharField(null=True)
+    dilution_factor_from_parent = FloatField(null=True)
+    initial_ul_per_well = FloatField()
+    name = CharField(unique=True)
+    parent = ForeignKeyField(db_column='parent_id', null=True, rel_model='self', to_field='id')
+    plate_type = ForeignKeyField(db_column='plate_type_id', rel_model=PlateTypes, to_field='id')
+    supplier = ForeignKeyField(db_column='supplier_id', null=True, rel_model=Suppliers, to_field='id')
+
+    class Meta:
+        db_table = 'transfer_plates'
 
 class Batteries(BaseModel):
     assays_sha1 = BlobField(index=True)  # auto-corrected to BlobField
@@ -112,6 +125,7 @@ class Experiments(BaseModel):
     notes = TextField(null=True)
     project = ForeignKeyField(db_column='project_id', rel_model=Superprojects, to_field='id')
     template_plate = ForeignKeyField(db_column='template_plate_id', null=True, rel_model=TemplatePlates, to_field='id')
+    transfer_plate = ForeignKeyField(db_column='transfer_plate_id', null=True, rel_model=TransferPlates, to_field='id')
 
     class Meta:
         db_table = 'experiments'
@@ -154,7 +168,7 @@ class Submissions(BaseModel):
 
 class ConfigFiles(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -332,7 +346,7 @@ class Batches(BaseModel):
     concentration_millimolar = FloatField(null=True)
     created = DateTimeField()
     date_ordered = DateField(index=True, null=True)
-    kind = CharField()
+    kind = CharField(null=True)
     legacy_internal = CharField(db_column='legacy_internal_id', index=True, null=True)
     location = CharField(null=True)
     lookup_hash = CharField(unique=True)
@@ -439,10 +453,10 @@ class CarpProjectTypes(BaseModel):
         db_table = 'carp_project_types'
 
 class CarpTasks(BaseModel):
-    days_to_wait = IntegerField(null=True)
     description = TextField(null=True)
     failure_condition = CharField(null=True)
     failure_target = IntegerField(db_column='failure_target_id', index=True, null=True)
+    min_age_days = IntegerField(null=True)
     name = CharField(index=True)
     notes = TextField(null=True)
     project_type = ForeignKeyField(db_column='project_type', rel_model=CarpProjectTypes, to_field='id')
@@ -606,34 +620,14 @@ class Features(BaseModel):
 
 class GeneLabels(BaseModel):
     created = DateTimeField()
-    gene = ForeignKeyField(db_column='gene', rel_model=Genes, to_field='id')
+    gene = ForeignKeyField(db_column='gene_id', rel_model=Genes, to_field='id')
     name = CharField(index=True)
-    ref = ForeignKeyField(db_column='ref', rel_model=Refs, to_field='id')
+    ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
 
     class Meta:
         db_table = 'gene_labels'
         indexes = (
             (('gene', 'name', 'ref'), True),
-        )
-
-class GeneticEvents(BaseModel):
-    created = DateTimeField()
-    description = CharField(null=True)
-    endogenous_gene = ForeignKeyField(db_column='endogenous_gene_id', null=True, rel_model=Genes, to_field='id')
-    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
-    variant = ForeignKeyField(db_column='variant_id', null=True, rel_model=GeneticVariants, to_field='id')
-
-    class Meta:
-        db_table = 'genetic_events'
-
-class GenesInvolved(BaseModel):
-    gene = ForeignKeyField(db_column='gene_id', rel_model=Genes, to_field='id')
-    mutation = ForeignKeyField(db_column='mutation_id', rel_model=GeneticEvents, to_field='id')
-
-    class Meta:
-        db_table = 'genes_involved'
-        indexes = (
-            (('gene', 'mutation'), True),
         )
 
 class Locations(BaseModel):
@@ -655,7 +649,6 @@ class GeneticConstructs(BaseModel):
     creator = ForeignKeyField(db_column='creator_id', rel_model=Users, to_field='id')
     date_made = DateTimeField(index=True, null=True)
     description = CharField()
-    injection_mix = CharField(index=True, null=True)
     kind = CharField(index=True)
     location = ForeignKeyField(db_column='location_id', null=True, rel_model=Locations, to_field='id')
     name = CharField(unique=True)
@@ -663,10 +656,11 @@ class GeneticConstructs(BaseModel):
     pmid = CharField(index=True, null=True)
     pub_link = CharField(null=True)
     raw_file = TextField()
-    raw_file_sha1 = CharField(null=True, unique=True)
+    raw_file_sha1 = CharField(index=True, null=True)
     reason_made = TextField(null=True)
     ref = IntegerField(db_column='ref_id')
     selection_marker = CharField(null=True)
+    supplier = ForeignKeyField(db_column='supplier_id', null=True, rel_model=Suppliers, to_field='id')
     tube_number = IntegerField(index=True)
     vector = CharField(index=True, null=True)
 
@@ -679,11 +673,37 @@ class GeneticConstructs(BaseModel):
 class GeneticConstructFeatures(BaseModel):
     construct = ForeignKeyField(db_column='construct_id', rel_model=GeneticConstructs, to_field='id')
     gene = ForeignKeyField(db_column='gene_id', rel_model=Genes, to_field='id')
+    is_complement = IntegerField()
+    kind = CharField()
+    position = IntegerField()
 
     class Meta:
         db_table = 'genetic_construct_features'
         indexes = (
             (('gene', 'construct'), True),
+        )
+
+class GeneticEvents(BaseModel):
+    created = DateTimeField()
+    description = CharField(null=True)
+    endogenous_gene = ForeignKeyField(db_column='endogenous_gene_id', null=True, rel_model=Genes, to_field='id')
+    endogenous_gene_position = IntegerField(null=True)
+    injection_mix = CharField(null=True)
+    on_reverse_strand = IntegerField(null=True)
+    user = ForeignKeyField(db_column='user_id', rel_model=Users, to_field='id')
+    variant = ForeignKeyField(db_column='variant_id', null=True, rel_model=GeneticVariants, to_field='id')
+
+    class Meta:
+        db_table = 'genetic_events'
+
+class GeneticKnockins(BaseModel):
+    event = ForeignKeyField(db_column='event_id', rel_model=GeneticEvents, to_field='id')
+    gene = ForeignKeyField(db_column='gene_id', rel_model=Genes, to_field='id')
+
+    class Meta:
+        db_table = 'genetic_knockins'
+        indexes = (
+            (('gene', 'event'), True),
         )
 
 class LogFiles(BaseModel):
