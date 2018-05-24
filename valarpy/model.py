@@ -115,7 +115,7 @@ class TemplatePlates(BaseModel):
         db_table = 'template_plates'
 
 class Experiments(BaseModel):
-    active = IntegerField(null=True)
+    active = IntegerField()
     battery = ForeignKeyField(db_column='battery_id', rel_model=Batteries, to_field='id')
     created = DateTimeField()
     creator = IntegerField(db_column='creator_id')
@@ -168,7 +168,7 @@ class Submissions(BaseModel):
 
 class ConfigFiles(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -210,7 +210,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
@@ -223,7 +223,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(unique=True)
+    name = CharField(index=True)
     positive = IntegerField(index=True)
 
     class Meta:
@@ -231,9 +231,10 @@ class ControlTypes(BaseModel):
 
 class GeneticVariants(BaseModel):
     created = DateTimeField()
-    creator = ForeignKeyField(db_column='creator_id', null=True, rel_model=Users, to_field='id')
+    creator = ForeignKeyField(db_column='creator_id', rel_model=Users, to_field='id')
     date_created = DateField(null=True)
     father = ForeignKeyField(db_column='father_id', null=True, rel_model='self', to_field='id')
+    fully_annotated = IntegerField()
     lineage_type = CharField(index=True, null=True)
     mother = ForeignKeyField(db_column='mother_id', null=True, rel_model='self', related_name='genetic_variants_mother_set', to_field='id')
     name = CharField(unique=True)
@@ -656,7 +657,7 @@ class GeneticConstructs(BaseModel):
     pmid = CharField(index=True, null=True)
     pub_link = CharField(null=True)
     raw_file = TextField()
-    raw_file_sha1 = CharField(index=True, null=True)
+    raw_file_sha1 = CharField(null=True, unique=True)
     reason_made = TextField(null=True)
     ref = IntegerField(db_column='ref_id')
     selection_marker = CharField(null=True)
