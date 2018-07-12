@@ -360,7 +360,7 @@ class Batches(BaseModel):
     supplier_catalog_number = CharField(null=True)
     supplier = ForeignKeyField(db_column='supplier_id', null=True, rel_model=Suppliers, to_field='id')
     suspicious = IntegerField()
-    tag = CharField(null=True)
+    tag = CharField(null=True, unique=True)
     well_number = IntegerField(index=True, null=True)
 
     class Meta:
@@ -448,21 +448,30 @@ class CarpProjectTypes(BaseModel):
     base_type = CharField()
     description = TextField(null=True)
     name = CharField(unique=True)
-    primary_user = ForeignKeyField(db_column='primary_user', null=True, rel_model=Users, to_field='id')
 
     class Meta:
         db_table = 'carp_project_types'
 
+class CarpTankTypes(BaseModel):
+    created = DateTimeField()
+    description = CharField()
+    name = CharField(unique=True)
+    project_type = ForeignKeyField(db_column='project_type_id', rel_model=CarpProjectTypes, to_field='id')
+
+    class Meta:
+        db_table = 'carp_tank_types'
+
 class CarpTasks(BaseModel):
     description = TextField(null=True)
     failure_condition = CharField(null=True)
-    failure_target = IntegerField(db_column='failure_target_id', index=True, null=True)
+    failure_target = ForeignKeyField(db_column='failure_target_id', null=True, rel_model='self', to_field='id')
     min_age_days = IntegerField(null=True)
     name = CharField(index=True)
     notes = TextField(null=True)
     project_type = ForeignKeyField(db_column='project_type', rel_model=CarpProjectTypes, to_field='id')
     success_condition = CharField(null=True)
-    success_target = IntegerField(db_column='success_target_id', index=True, null=True)
+    success_target = ForeignKeyField(db_column='success_target_id', null=True, rel_model='self', related_name='carp_tasks_success_target_set', to_field='id')
+    tank_type = ForeignKeyField(db_column='tank_type_id', rel_model=CarpTankTypes, to_field='id')
 
     class Meta:
         db_table = 'carp_tasks'
@@ -508,6 +517,7 @@ class CarpTanks(BaseModel):
     internal = CharField(db_column='internal_id', unique=True)
     notes = TextField(null=True)
     project = ForeignKeyField(db_column='project_id', rel_model=CarpProjects, to_field='id')
+    tank_type = ForeignKeyField(db_column='tank_type_id', rel_model=CarpTankTypes, to_field='id')
     variant = ForeignKeyField(db_column='variant_id', rel_model=GeneticVariants, to_field='id')
 
     class Meta:
@@ -657,7 +667,7 @@ class GeneticConstructs(BaseModel):
     pmid = CharField(index=True, null=True)
     pub_link = CharField(null=True)
     raw_file = TextField()
-    raw_file_sha1 = CharField(null=True, unique=True)
+    raw_file_sha1 = CharField(index=True, null=True)
     reason_made = TextField(null=True)
     ref = IntegerField(db_column='ref_id')
     selection_marker = CharField(null=True)
