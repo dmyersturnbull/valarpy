@@ -452,52 +452,6 @@ class CarpProjectTypes(BaseModel):
     class Meta:
         db_table = 'carp_project_types'
 
-class CarpTankTypes(BaseModel):
-    created = DateTimeField()
-    description = CharField()
-    name = CharField(unique=True)
-    project_type = ForeignKeyField(db_column='project_type_id', rel_model=CarpProjectTypes, to_field='id')
-
-    class Meta:
-        db_table = 'carp_tank_types'
-
-class CarpTasks(BaseModel):
-    description = TextField(null=True)
-    failure_condition = CharField(null=True)
-    failure_target = ForeignKeyField(db_column='failure_target_id', null=True, rel_model='self', to_field='id')
-    min_age_days = IntegerField(null=True)
-    name = CharField(index=True)
-    notes = TextField(null=True)
-    project_type = ForeignKeyField(db_column='project_type', rel_model=CarpProjectTypes, to_field='id')
-    success_condition = CharField(null=True)
-    success_target = ForeignKeyField(db_column='success_target_id', null=True, rel_model='self', related_name='carp_tasks_success_target_set', to_field='id')
-    tank_type = ForeignKeyField(db_column='tank_type_id', rel_model=CarpTankTypes, to_field='id')
-
-    class Meta:
-        db_table = 'carp_tasks'
-        indexes = (
-            (('name', 'project_type'), True),
-        )
-
-class CarpDataTypes(BaseModel):
-    description = TextField(null=True)
-    name = CharField(unique=True)
-
-    class Meta:
-        db_table = 'carp_data_types'
-
-class CarpDataTasks(BaseModel):
-    data_type_produced = ForeignKeyField(db_column='data_type_produced', rel_model=CarpDataTypes, to_field='id')
-    description = TextField(null=True)
-    name = CharField()
-    task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
-
-    class Meta:
-        db_table = 'carp_data_tasks'
-        indexes = (
-            (('name', 'task'), True),
-        )
-
 class CarpProjects(BaseModel):
     ancestor = ForeignKeyField(db_column='ancestor_id', null=True, rel_model='self', to_field='id')
     created = DateTimeField()
@@ -509,6 +463,15 @@ class CarpProjects(BaseModel):
 
     class Meta:
         db_table = 'carp_projects'
+
+class CarpTankTypes(BaseModel):
+    created = DateTimeField()
+    description = CharField()
+    name = CharField(unique=True)
+    project_type = ForeignKeyField(db_column='project_type_id', rel_model=CarpProjectTypes, to_field='id')
+
+    class Meta:
+        db_table = 'carp_tank_types'
 
 class CarpTanks(BaseModel):
     alive = IntegerField()
@@ -522,19 +485,6 @@ class CarpTanks(BaseModel):
 
     class Meta:
         db_table = 'carp_tanks'
-
-class CarpData(BaseModel):
-    created = DateTimeField()
-    data_task = ForeignKeyField(db_column='data_task_id', rel_model=CarpDataTasks, to_field='id')
-    external_uri = TextField(null=True)
-    father_tank = ForeignKeyField(db_column='father_tank', rel_model=CarpTanks, to_field='id')
-    mother_tank = ForeignKeyField(db_column='mother_tank', rel_model=CarpTanks, related_name='carp_tanks_mother_tank_set', to_field='id')
-    notes = TextField(null=True)
-    person_collected = ForeignKeyField(db_column='person_collected', rel_model=Users, to_field='id')
-    run = ForeignKeyField(db_column='run_id', null=True, rel_model=Runs, to_field='id')
-
-    class Meta:
-        db_table = 'carp_data'
 
 class CarpScans(BaseModel):
     created = DateTimeField()
@@ -562,11 +512,27 @@ class CarpSystemData(BaseModel):
             (('name', 'datetime_scanned'), True),
         )
 
+class CarpTasks(BaseModel):
+    description = TextField(null=True)
+    failure_condition = CharField(null=True)
+    failure_target = ForeignKeyField(db_column='failure_target_id', null=True, rel_model='self', to_field='id')
+    min_age_days = IntegerField(null=True)
+    name = CharField(index=True)
+    notes = TextField(null=True)
+    project_type = ForeignKeyField(db_column='project_type', rel_model=CarpProjectTypes, to_field='id')
+    success_condition = CharField(null=True)
+    success_target = ForeignKeyField(db_column='success_target_id', null=True, rel_model='self', related_name='carp_tasks_success_target_set', to_field='id')
+    tank_type = ForeignKeyField(db_column='tank_type_id', rel_model=CarpTankTypes, to_field='id')
+
+    class Meta:
+        db_table = 'carp_tasks'
+        indexes = (
+            (('name', 'project_type'), True),
+        )
+
 class CarpTankTasks(BaseModel):
     created = DateTimeField()
-    next = ForeignKeyField(db_column='next_id', null=True, rel_model='self', to_field='id')
     notes = CharField()
-    previous = ForeignKeyField(db_column='previous_id', null=True, rel_model='self', related_name='carp_tank_tasks_previous_set', to_field='id')
     tank = ForeignKeyField(db_column='tank_id', rel_model=CarpTanks, to_field='id')
     task = ForeignKeyField(db_column='task_id', rel_model=CarpTasks, to_field='id')
 
@@ -667,7 +633,7 @@ class GeneticConstructs(BaseModel):
     pmid = CharField(index=True, null=True)
     pub_link = CharField(null=True)
     raw_file = TextField()
-    raw_file_sha1 = CharField(index=True, null=True)
+    raw_file_sha1 = CharField(null=True, unique=True)
     reason_made = TextField(null=True)
     ref = IntegerField(db_column='ref_id')
     selection_marker = CharField(null=True)
@@ -725,13 +691,6 @@ class LogFiles(BaseModel):
 
     class Meta:
         db_table = 'log_files'
-
-class LorienConfigs(BaseModel):
-    created = DateTimeField()
-    notes = CharField(null=True)
-
-    class Meta:
-        db_table = 'lorien_configs'
 
 class MandosInfo(BaseModel):
     compound = IntegerField(db_column='compound_id')
@@ -812,8 +771,7 @@ class MandosRuleTags(BaseModel):
         )
 
 class Rois(BaseModel):
-    lorien_commit_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
-    lorien_config = ForeignKeyField(db_column='lorien_config', null=True, rel_model=LorienConfigs, to_field='id')
+    ref = IntegerField(db_column='ref_id', index=True, null=True)
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
     x0 = IntegerField()
     x1 = IntegerField()
@@ -924,17 +882,12 @@ class TemplateWells(BaseModel):
 
 class WellFeatures(BaseModel):
     floats = BlobField()  # auto-corrected to BlobField
-    lorien_commit_sha1 = BlobField(index=True)  # auto-corrected to BlobField
-    lorien_config = ForeignKeyField(db_column='lorien_config_id', rel_model=LorienConfigs, to_field='id')
     sha1 = BlobField(index=True)  # auto-corrected to BlobField
     type = ForeignKeyField(db_column='type_id', rel_model=Features, to_field='id')
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
 
     class Meta:
         db_table = 'well_features'
-        indexes = (
-            (('well', 'type', 'lorien_config'), True),
-        )
 
 class WellTreatments(BaseModel):
     batch = ForeignKeyField(db_column='batch_id', rel_model=Batches, to_field='id')
