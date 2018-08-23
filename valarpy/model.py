@@ -210,7 +210,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(index=True)
+    name = CharField(unique=True)
     template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
@@ -223,7 +223,7 @@ class ControlTypes(BaseModel):
     description = CharField()
     drug_related = IntegerField(index=True)
     genetics_related = IntegerField(index=True)
-    name = CharField(index=True)
+    name = CharField(unique=True)
     positive = IntegerField(index=True)
 
     class Meta:
@@ -385,7 +385,7 @@ class BiomarkerExperiments(BaseModel):
     description = CharField()
     experimentalist = ForeignKeyField(db_column='experimentalist_id', rel_model=Users, to_field='id')
     kind = CharField()
-    ref = IntegerField(db_column='ref_id')
+    ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
     tag = CharField(unique=True)
 
     class Meta:
@@ -632,10 +632,10 @@ class GeneticConstructs(BaseModel):
     notes = TextField(null=True)
     pmid = CharField(index=True, null=True)
     pub_link = CharField(null=True)
-    raw_file = TextField()
-    raw_file_sha1 = CharField(null=True, unique=True)
+    raw_file = BlobField(null=True)  # auto-corrected to BlobField
+    raw_file_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
     reason_made = TextField(null=True)
-    ref = IntegerField(db_column='ref_id')
+    ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
     selection_marker = CharField(null=True)
     supplier = ForeignKeyField(db_column='supplier_id', null=True, rel_model=Suppliers, to_field='id')
     tube_number = IntegerField(index=True)
@@ -771,7 +771,7 @@ class MandosRuleTags(BaseModel):
         )
 
 class Rois(BaseModel):
-    ref = IntegerField(db_column='ref_id', index=True, null=True)
+    ref = IntegerField(db_column='ref_id', index=True)
     well = ForeignKeyField(db_column='well_id', rel_model=Wells, to_field='id')
     x0 = IntegerField()
     x1 = IntegerField()
