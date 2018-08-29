@@ -118,7 +118,7 @@ class Experiments(BaseModel):
     active = IntegerField()
     battery = ForeignKeyField(db_column='battery_id', rel_model=Batteries, to_field='id')
     created = DateTimeField()
-    creator = IntegerField(db_column='creator_id')
+    creator = ForeignKeyField(db_column='creator_id', rel_model=Users, to_field='id')
     default_acclimation_sec = IntegerField()
     description = CharField(null=True)
     name = CharField(unique=True)
@@ -168,7 +168,7 @@ class Submissions(BaseModel):
 
 class ConfigFiles(BaseModel):
     created = DateTimeField()
-    text_sha1 = BlobField(unique=True)  # auto-corrected to BlobField
+    text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     toml_text = TextField()
 
     class Meta:
@@ -633,7 +633,7 @@ class GeneticConstructs(BaseModel):
     pmid = CharField(index=True, null=True)
     pub_link = CharField(null=True)
     raw_file = BlobField(null=True)  # auto-corrected to BlobField
-    raw_file_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
+    raw_file_sha1 = BlobField(null=True, unique=True)  # auto-corrected to BlobField
     reason_made = TextField(null=True)
     ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
     selection_marker = CharField(null=True)
@@ -649,10 +649,12 @@ class GeneticConstructs(BaseModel):
 
 class GeneticConstructFeatures(BaseModel):
     construct = ForeignKeyField(db_column='construct_id', rel_model=GeneticConstructs, to_field='id')
-    gene = ForeignKeyField(db_column='gene_id', rel_model=Genes, to_field='id')
-    is_complement = IntegerField()
+    end = BigIntegerField(null=True)
+    gene = ForeignKeyField(db_column='gene_id', null=True, rel_model=Genes, to_field='id')
+    is_complement = IntegerField(null=True)
     kind = CharField()
-    position = IntegerField()
+    name = CharField()
+    start = BigIntegerField(null=True)
 
     class Meta:
         db_table = 'genetic_construct_features'
