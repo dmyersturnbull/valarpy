@@ -633,7 +633,7 @@ class GeneticConstructs(BaseModel):
     pmid = CharField(index=True, null=True)
     pub_link = CharField(null=True)
     raw_file = BlobField(null=True)  # auto-corrected to BlobField
-    raw_file_sha1 = BlobField(null=True, unique=True)  # auto-corrected to BlobField
+    raw_file_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
     reason_made = TextField(null=True)
     ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
     selection_marker = CharField(null=True)
@@ -684,6 +684,15 @@ class GeneticKnockins(BaseModel):
         indexes = (
             (('gene', 'event'), True),
         )
+
+class KaleWeights(BaseModel):
+    description = TextField(null=True)
+    floats = BlobField()  # auto-corrected to BlobField
+    name = CharField(unique=True)
+    project = ForeignKeyField(db_column='project_id', rel_model=Superprojects, to_field='id')
+
+    class Meta:
+        db_table = 'kale_weights'
 
 class LogFiles(BaseModel):
     created = DateTimeField()

@@ -1,15 +1,16 @@
 
-import json, sys, ast, numbers
-from datetime import date, datetime
-from typing import List, Callable, Any, Union, Optional, Dict
+import ast, numbers
+from typing import List, Union, Type
 
 import pandas as pd
 import peewee
-from hurry.filesize import size as _hurrysize
+from peewee import Model
 
-from klgists.common import json_serial, pretty_dict, pp_dict
+from klgists.common import pretty_dict, pp_dict
+
 
 class ValarLookupError(KeyError): pass
+
 
 class Tools:
 
@@ -21,15 +22,15 @@ class Tools:
 		])
 
 	@staticmethod
-	def describe(thing_class: peewee.Model) -> None:
+	def describe(thing_class: Type[Model]) -> None:
 		pp_dict(thing_class._meta.columns)
 
 	@staticmethod
-	def description(thing_class: peewee.Model) -> None:
+	def description(thing_class: Type[Model]) -> pd.DataFrame:
 		return pd.DataFrame.from_dict(ast.literal_eval(pretty_dict(thing_class._meta.columns)), orient='index').rename(columns={0: 'type'})
 
 	@staticmethod
-	def fetch(thing_class: peewee.Model, thing: Union[any, int, str], name_column: str = 'name'):
+	def fetch(thing_class: Type[Model], thing: Union[any, int, str], name_column: str = 'name'):
 		if isinstance(thing, peewee.Model):
 			found = thing
 		elif isinstance(thing, int) or issubclass(type(thing), numbers.Integral):
@@ -42,8 +43,9 @@ class Tools:
 			raise ValarLookupError("Could not find {} in {}".format(thing, thing_class))
 		return found
 
-	def fetch_to_query(thing_class: peewee.Model, thing: Union[any, int, str], name_column: str = 'name') -> List[peewee.Expression]:
+	def fetch_to_query(thing_class: Type[Model], thing: Union[any, int, str], name_column: str = 'name') -> List[peewee.Expression]:
 		if isinstance(thing, (int, str, thing_class)):
+			# noinspection PyTypeChecker
 			return [thing_class.id == Tools.fetch(thing_class, thing, name_column=name_column).id]
 		elif isinstance(thing, List):
 			return thing
