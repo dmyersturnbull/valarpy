@@ -315,6 +315,18 @@ class AudioFiles(BaseModel):
     class Meta:
         db_table = 'audio_files'
 
+class Locations(BaseModel):
+    active = IntegerField()
+    created = DateTimeField()
+    description = CharField()
+    name = CharField(unique=True)
+    part_of = ForeignKeyField(db_column='part_of', null=True, rel_model='self', to_field='id')
+    purpose = CharField()
+    temporary = IntegerField()
+
+    class Meta:
+        db_table = 'locations'
+
 class Refs(BaseModel):
     created = DateTimeField()
     datetime_downloaded = DateTimeField(null=True)
@@ -349,12 +361,13 @@ class Batches(BaseModel):
     date_ordered = DateField(index=True, null=True)
     kind = CharField(null=True)
     legacy_internal = CharField(db_column='legacy_internal_id', index=True, null=True)
-    location = CharField(null=True)
+    location = ForeignKeyField(db_column='location_id', null=True, rel_model=Locations, to_field='id')
+    location_note = CharField(null=True)
     lookup_hash = CharField(unique=True)
+    made_from = ForeignKeyField(db_column='made_from_id', null=True, rel_model='self', to_field='id')
     molecular_weight = FloatField(null=True)
     notes = TextField(null=True)
     person_ordered = ForeignKeyField(db_column='person_ordered', null=True, rel_model=Users, to_field='id')
-    reason_ordered = TextField(null=True)
     ref = ForeignKeyField(db_column='ref_id', null=True, rel_model=Refs, to_field='id')
     solvent = ForeignKeyField(db_column='solvent_id', null=True, rel_model=Compounds, related_name='compounds_solvent_set', to_field='id')
     supplier_catalog_number = CharField(null=True)
@@ -607,18 +620,6 @@ class GeneLabels(BaseModel):
             (('gene', 'name', 'ref'), True),
         )
 
-class Locations(BaseModel):
-    active = IntegerField()
-    created = DateTimeField()
-    description = CharField()
-    name = CharField(unique=True)
-    part_of = ForeignKeyField(db_column='part_of', null=True, rel_model='self', to_field='id')
-    purpose = CharField()
-    temporary = IntegerField()
-
-    class Meta:
-        db_table = 'locations'
-
 class GeneticConstructs(BaseModel):
     bacterial_strain = CharField(index=True, null=True)
     box_number = IntegerField(index=True)
@@ -633,8 +634,7 @@ class GeneticConstructs(BaseModel):
     pmid = CharField(index=True, null=True)
     pub_link = CharField(null=True)
     raw_file = BlobField(null=True)  # auto-corrected to BlobField
-    raw_file_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
-    reason_made = TextField(null=True)
+    raw_file_sha1 = BlobField(null=True, unique=True)  # auto-corrected to BlobField
     ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
     selection_marker = CharField(null=True)
     supplier = ForeignKeyField(db_column='supplier_id', null=True, rel_model=Suppliers, to_field='id')
