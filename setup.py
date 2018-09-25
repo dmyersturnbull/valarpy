@@ -5,14 +5,14 @@ from distutils.core import setup
 
 setup(
 	name='valarpy',
-	version='0.35.1',
+	version='1.0.0',
 	description='Python connection code to Valar',
 	author='Douglas Myers-Turnbull',
 	url='https://github.com/kokellab/valarpy',
 	packages=['valarpy'],
 	test_suite='tests',
 	classifiers=[
-		"Development Status :: 3 - Alpha",
+		"Development Status :: 4 - Beta",
 		'Intended Audience :: Science/Research',
 		'Natural Language :: English'
 		'Operating System :: POSIX',
