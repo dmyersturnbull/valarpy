@@ -210,7 +210,7 @@ class Assays(BaseModel):
     frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
     hidden = IntegerField()
     length = IntegerField()
-    name = CharField(unique=True)
+    name = CharField(index=True)
     template_assay = ForeignKeyField(db_column='template_assay_id', null=True, rel_model=TemplateAssays, to_field='id')
 
     class Meta:
@@ -342,7 +342,7 @@ class Refs(BaseModel):
         )
 
 class Compounds(BaseModel):
-    chembl = CharField(db_column='chembl_id', null=True, unique=True)
+    chembl = CharField(db_column='chembl_id', index=True, null=True)
     chemspider = IntegerField(db_column='chemspider_id', null=True)
     created = DateTimeField()
     inchi = CharField()
@@ -354,12 +354,12 @@ class Compounds(BaseModel):
         db_table = 'compounds'
 
 class Batches(BaseModel):
+    amount = CharField(null=True)
     box_number = IntegerField(index=True, null=True)
     compound = ForeignKeyField(db_column='compound_id', null=True, rel_model=Compounds, to_field='id')
     concentration_millimolar = FloatField(null=True)
     created = DateTimeField()
     date_ordered = DateField(index=True, null=True)
-    kind = CharField(null=True)
     legacy_internal = CharField(db_column='legacy_internal_id', index=True, null=True)
     location = ForeignKeyField(db_column='location_id', null=True, rel_model=Locations, to_field='id')
     location_note = CharField(null=True)
@@ -634,7 +634,7 @@ class GeneticConstructs(BaseModel):
     pmid = CharField(index=True, null=True)
     pub_link = CharField(null=True)
     raw_file = BlobField(null=True)  # auto-corrected to BlobField
-    raw_file_sha1 = BlobField(null=True, unique=True)  # auto-corrected to BlobField
+    raw_file_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
     ref = ForeignKeyField(db_column='ref_id', rel_model=Refs, to_field='id')
     selection_marker = CharField(null=True)
     supplier = ForeignKeyField(db_column='supplier_id', null=True, rel_model=Suppliers, to_field='id')
