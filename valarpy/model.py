@@ -369,7 +369,8 @@ class Batches(BaseModel):
 	notes = TextField(null=True)
 	person_ordered = ForeignKeyField(column_name='person_ordered', field='id', model=Users, null=True)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs, null=True)
-	solvent = ForeignKeyField(backref='compounds_solvent_set', column_name='solvent_id', field='id', model=Compounds, null=True)
+	# ignore this to make queries easier 
+	#solvent = ForeignKeyField(backref='compounds_solvent_set', column_name='solvent_id', field='id', model=Compounds, null=True)
 	supplier_catalog_number = CharField(null=True)
 	supplier = ForeignKeyField(column_name='supplier_id', field='id', model=Suppliers, null=True)
 	suspicious = IntegerField(constraints=[SQL("DEFAULT 0")])
