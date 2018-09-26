@@ -1,3 +1,119 @@
+from typing import List, Union, Dict, Any, Optional
+import peewee
+import numbers
+import pandas as pd
 from peewee import *
 from valarpy.global_connection import db
 database = db.peewee_database
+
+class ValarLookupError(KeyError): pass
+
+class EnumField(peewee._StringField):
+	field_type = 'ENUM'
+
+	def __init__(self, max_length=255, *args, **kwargs):
+		self.max_length = max_length
+		super(EnumField, self).__init__(*args, **kwargs)
+
+	def get_modifiers(self):
+		return self.max_length and [self.max_length] or None
+
+class BinaryField(BlobField):
+	field_type = 'BINARY'
+
+	def __init__(self, max_length = 255, *args, **kwargs):
+		super(BinaryField, self).__init__(args, kwargs)
+		self.max_length = max_length
+
+class UnknownField(object):
+	def __init__(self, *_, **__): pass
+
+def _cfirst(dataframe: pd.DataFrame, col_seq) -> pd.DataFrame:
+	if len(dataframe) == 0:  # will break otherwise
+		return dataframe
+	else:
+		return dataframe[col_seq + [c for c in dataframe.columns if c not in col_seq]]
+
+class BaseModel(Model):
+
+	class Meta:
+		database = database
+
+	@property
+	def _data(self) -> Dict[str, Any]:
+		# for compatibility with peewee version 2 code
+		return self.__data__
+
+	@classmethod
+	def _description(cls) -> List[Dict[str, str]]:
+		return [
+			{
+				'name': v.name,
+				'type': v.field_type,
+				'length': str(v.max_length) if hasattr(v, 'max_length') else None,
+				'nullable': v.null,
+				'choices': v.choices if hasattr(v, 'choices') else None,
+				'primary': v.primary_key,
+				'unique': v.unique,
+				'constraints': v.constraints
+			}
+			for k, v in cls._meta.fields.items()
+		]
+
+	@classmethod
+	def _description_df(cls) -> pd.DataFrame:
+		# noinspection PyTypeChecker
+		df = pd.DataFrame.from_dict(cls._description())
+		return _cfirst(df, ['name', 'type', 'length', 'nullable', 'choices', 'primary', 'unique'])
+
+	@classmethod
+	def _schema_lines(cls):
+		s = ''
+		for d in cls._description():
+			s += ' '.join([
+				d['name'],
+				d['type'] + (str(d['choices']) if d['choices'] is not None else ("({})".format(d['length']) if d['length'] is not None else '')),
+				('NULL' if d['nullable'] else 'NOT NULL'),
+				('PRIMARY KEY' if d['primary'] else ('UNIQUE' if d['unique'] else '')),
+				d['constraints']
+			]) + '\n'
+		return s
+
+	@classmethod
+	def fetch_or_none(cls, thing: Union[any, int, str]) -> Optional[peewee.Model]:
+		if isinstance(thing, peewee.Model):
+			return thing
+		elif isinstance(thing, int) or issubclass(type(thing), numbers.Integral):
+			# noinspection PyUnresolvedReferences
+			return cls.get_or_none(cls.id == int(thing))
+		for name_column in cls.__indexing_cols():
+			found = cls.get_or_none(getattr(cls, name_column) == str(thing))
+			if found is not None: return found
+		return None
+
+	@classmethod
+	def fetch(cls, thing: Union[any, int, str]):
+		found = cls.fetch_or_none(thing)
+		if found is None:
+			raise ValarLookupError("Could not find {} in {}".format(thing, cls))
+		return found
+
+	@classmethod
+	def fetch_to_query(cls, thing: Union[any, int, str]) -> List[peewee.Expression]:
+		if isinstance(thing, int) or issubclass(type(thing), numbers.Integral):
+			# noinspection PyUnresolvedReferences
+			return [cls.id == thing]
+		elif isinstance(thing, (int, str, Model)):
+			# noinspection PyTypeChecker,PyUnresolvedReferences
+			return [cls.id == cls.fetch(thing).id]
+		elif isinstance(thing, List) and all(isinstance(t, peewee.Expression) for t in thing):
+			return thing
+		elif isinstance(thing, peewee.Expression):
+			return [thing]
+		else:
+			raise TypeError("Invalid type for {} in {}".format(thing, cls))
+
+	@classmethod
+	def __indexing_cols(cls):
+		return {k for k, v in cls._meta.fields.items() if v.unique and v.field_type in {'VARCHAR', 'CHAR', 'ENUM'}}
+
