@@ -878,7 +878,7 @@ class LogFiles(BaseModel):
 
 
 class MandosInfo(BaseModel):
-	compound = IntegerField(column_name='compound_id')
+	compound = ForeignKeyField(column_name='compound_id', field='id', model=Compounds)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	name = CharField(index=True)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
