@@ -315,7 +315,7 @@ class Runs(BaseModel):
 	experiment = ForeignKeyField(column_name='experiment_id', field='id', model=Experiments)
 	experimentalist = ForeignKeyField(column_name='experimentalist_id', field='id', model=Users)
 	incubation_min = IntegerField(index=True, null=True)
-	name = CharField(index=True, null=True, unique=True)
+	name = CharField(null=True, unique=True)
 	notes = TextField(null=True)
 	plate = ForeignKeyField(column_name='plate_id', field='id', model=Plates)
 	sauron_config = ForeignKeyField(column_name='sauron_config_id', field='id', model=SauronConfigs)
@@ -343,7 +343,7 @@ class Assays(BaseModel):
 	frames_sha1 = BlobField(index=True)  # auto-corrected to BlobField
 	hidden = IntegerField(constraints=[SQL("DEFAULT 0")])
 	length = IntegerField()
-	name = CharField(index=True)
+	name = CharField(unique=True)
 	template_assay = ForeignKeyField(column_name='template_assay_id', field='id', model=TemplateAssays, null=True)
 
 	class Meta:
@@ -357,7 +357,7 @@ class ControlTypes(BaseModel):
 	description = CharField()
 	drug_related = IntegerField(constraints=[SQL("DEFAULT 1")], index=True)
 	genetics_related = IntegerField(index=True)
-	name = CharField(index=True)
+	name = CharField(unique=True)
 	positive = IntegerField(index=True)
 
 	class Meta:
@@ -593,7 +593,7 @@ class BiomarkerLevels(BaseModel):
 	fold_change = FloatField(null=True)
 	full_value = CharField()
 	sample = ForeignKeyField(column_name='sample_id', field='id', model=BiomarkerSamples)
-
+	tissue = IntegerField(column_name='tissue_id', null=True)
 	class Meta:
 		table_name = 'biomarker_levels'
 
