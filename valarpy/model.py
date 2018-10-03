@@ -961,6 +961,37 @@ class MandosRuleTags(BaseModel):
 		)
 
 
+class Tissues(BaseModel):
+        created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
+        external = CharField(column_name='external_id')
+        name = CharField(index=True)
+        ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
+
+        class Meta:
+                table_name = 'tissues'
+                indexes = (
+                        (('external', 'ref'), True),
+                )
+
+
+class MandosExpression(BaseModel):
+        confidence = CharField(index=True)
+        created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
+        developmental_stage = CharField(null=True)
+        external = CharField(column_name='external_id', null=True)
+        gene = ForeignKeyField(column_name='gene_id', field='id', model=Genes)
+        level = FloatField()
+        ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
+        tissue = ForeignKeyField(column_name='tissue_id', field='id', model=Tissues)
+
+        class Meta:
+                table_name = 'mandos_expression'
+                indexes = (
+                        (('external', 'ref'), True),
+                        (('gene', 'tissue', 'developmental_stage', 'ref'), True),
+                )
+
+
 class Rois(BaseModel):
 	ref = IntegerField(column_name='ref_id', index=True)
 	well = ForeignKeyField(column_name='well_id', field='id', model=Wells)
