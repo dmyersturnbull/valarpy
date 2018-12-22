@@ -9,7 +9,7 @@ Set up your SSH keys as described in [How To Set Up SSH Keys | DigitalOcean](htt
 
 1. Run `ssh-keygen -t rsa` (and hit enter without using a passphrase)
 2. Enter file in which to save the key (`/home/demo/.ssh/id_rsa`):
-3. Run `ssh-copy-id yourname@valinor@ucsf.edu` to let Valinor know who you are
+3. Run `ssh-copy-id yourname@valinor.ucsf.edu` to let Valinor know who you are
 4. Open the file `~/.ssh/config` in a text editor, and include these lines (deleting any duplicate sections):
 ```
 Host valinor valinor.ucsf.edu
