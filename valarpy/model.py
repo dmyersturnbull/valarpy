@@ -857,16 +857,6 @@ class GeneticKnockins(BaseModel):
 		)
 
 
-class KaleWeights(BaseModel):
-	description = TextField(null=True)
-	floats = BlobField()  # auto-corrected to BlobField
-	name = CharField(unique=True)
-	project = ForeignKeyField(column_name='project_id', field='id', model=Superprojects)
-
-	class Meta:
-		table_name = 'kale_weights'
-
-
 class LogFiles(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	run = ForeignKeyField(column_name='run_id', field='id', model=Runs)
