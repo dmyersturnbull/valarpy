@@ -67,7 +67,7 @@ class BaseModel(Model):
 				'choices': v.choices if hasattr(v, 'choices') else None,
 				'primary': v.primary_key,
 				'unique': v.unique,
-				'constraints': v.constraints
+				'constraints': None if v.constraints is None else len(v.constraints)
 			}
 			for k, v in cls._meta.fields.items()
 		]
@@ -93,15 +93,20 @@ class BaseModel(Model):
 
 	@classmethod
 	def fetch_or_none(cls, thing: Union[any, int, str]) -> Optional[peewee.Model]:
-		if isinstance(thing, peewee.Model):
+		if isinstance(thing, cls):
 			return thing
+		elif isinstance(thing, peewee.Model):
+			raise TypeError("Fetching a {} on class {}".format(thing.__class__.__name__, cls.__name__))
 		elif isinstance(thing, int) or isinstance(thing, float) or issubclass(type(thing), numbers.Integral):
 			# noinspection PyUnresolvedReferences
 			return cls.get_or_none(cls.id == int(thing))
-		for name_column in cls.__indexing_cols():
-			found = cls.get_or_none(getattr(cls, name_column) == str(thing))
-			if found is not None: return found
-		return None
+		elif isinstance(thing, str):
+			for name_column in cls.__indexing_cols():
+				found = cls.get_or_none(getattr(cls, name_column) == str(thing))
+				if found is not None: return found
+			return None
+		else:
+			raise TypeError("Fetching with unknown type {} on class {}".format(thing.__class__.__name__, cls.__name__))
 
 	@classmethod
 	def fetch(cls, thing: Union[any, int, str]):
@@ -226,6 +231,7 @@ class Superprojects(BaseModel):
 	class Meta:
 		table_name = 'superprojects'
 
+Projects = Superprojects
 
 class TemplatePlates(BaseModel):
 	author = ForeignKeyField(column_name='author_id', field='id', model=Users)
@@ -475,7 +481,7 @@ class Refs(BaseModel):
 	datetime_downloaded = DateTimeField(null=True)
 	description = CharField(null=True)
 	external_version = CharField(null=True)
-	name = CharField(index=True)
+	name = CharField(unique=True)
 	url = CharField(index=True, null=True)
 
 	class Meta:
