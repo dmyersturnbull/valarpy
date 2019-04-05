@@ -1022,6 +1022,7 @@ class MandosRules(BaseModel):
 	object = ForeignKeyField(column_name='object_id', field='id', model=MandosObjects)
 	predicate = ForeignKeyField(column_name='predicate_id', field='id', model=MandosPredicates)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
+	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 
 	class Meta:
 		table_name = 'mandos_rules'
