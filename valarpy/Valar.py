@@ -1,3 +1,9 @@
+"""
+Part of Valarpy by the Kokel Lab.
+This module provides a way to connect to and load Valar.
+See the `Valar` class.
+"""
+
 import os
 import logging
 from typing import Optional
@@ -10,12 +16,13 @@ valarpy_config_env_variable_name = "VALARPY_CONFIG"  # type: str
 
 
 class Valar:
-	"""Simplest way to use valarpy with Peewee.
+	"""
+	Simplest way to use valarpy with Peewee.
 	Requires an environment variable named VALARPY_CONFIG that points to a JSON config file.
 	Ex:
-		with Valar():
-			import valarpy.model as model
-			print(len(model.Projects.select())
+		>>> with Valar():
+		>>>	import valarpy.model as model
+		>>>	print(len(model.Projects.select())
 	"""
 	config_file_path = None  # type: str
 

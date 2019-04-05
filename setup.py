@@ -18,7 +18,7 @@ setup(
 		'Natural Language :: English'
 		'Operating System :: POSIX',
 		'Programming Language :: Python :: 3 :: Only',
-		'Programming Language :: Python :: 3.5',
+		'Programming Language :: Python :: 3.7',
 		'Topic :: Scientific/Engineering :: Bio-Informatics'
 	]
 )
