@@ -20,27 +20,16 @@ class Valar:
 	config_file_path = None  # type: str
 
 	def __init__(self, config_file_path: Optional[str] = None):
-
 		if config_file_path is None:
 			if valarpy_config_env_variable_name not in os.environ:
-				raise ValueError('Environment variable {} is not set; set this to the correct .json file'.format(
-					valarpy_config_env_variable_name))
+				raise ValueError('Environment variable {} is not set; set this to the correct .json file'.format(valarpy_config_env_variable_name))
 			self.config_file_path = os.environ[valarpy_config_env_variable_name]
 		else:
 			self.config_file_path = config_file_path
-
 		if not pexists(self.config_file_path):
-			raise ValueError(
-				"{} file {} does not exist".format(valarpy_config_env_variable_name, self.config_file_path))
+			raise ValueError("{} file {} does not exist".format(valarpy_config_env_variable_name, self.config_file_path))
 		if not pfile(self.config_file_path):
 			raise ValueError("{} file {} is not a file".format(valarpy_config_env_variable_name, self.config_file_path))
-
-	def __enter__(self):
-		self.open()
-		return self
-
-	def __exit__(self, type, value, traceback):
-		self.close()
 
 	def open(self) -> None:
 		db = global_connection.GlobalConnection.from_json(self.config_file_path)
@@ -52,3 +41,15 @@ class Valar:
 		logging.info("Closing connection to Valar")
 		global_connection.db.close()
 
+	def __enter__(self):
+		self.open()
+		return self
+
+	def __exit__(self, t, value, traceback):
+		self.close()
+
+	def __del__(self):
+		self.close()
+
+
+__all__ = ['Valar', 'global_connection']

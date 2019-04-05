@@ -3,9 +3,9 @@ from collections import defaultdict
 from typing import List, Union, Dict, Any, Optional, Callable, Sequence, Iterable
 from numbers import Integral
 import peewee
-import numbers
 import pandas as pd
 from peewee import *
+from klgists.pandas.extended_df import PrettyInternalDataFrame
 from valarpy.global_connection import db
 database = db.peewee_database
 
@@ -15,6 +15,9 @@ class ValarTableTypeError(TypeError): pass
 
 
 class EnumField(peewee._StringField):
+	"""
+	A MySQL `ENUM` field type.
+	"""
 	field_type = 'ENUM'
 
 	def __init__(self, max_length=255, *args, **kwargs):
@@ -26,6 +29,9 @@ class EnumField(peewee._StringField):
 
 
 class BinaryField(BlobField):
+	"""
+	A MySQL constant-width `BINARY` field type.
+	"""
 	field_type = 'BINARY'
 
 	def __init__(self, max_length = 255, *args, **kwargs):
@@ -34,6 +40,9 @@ class BinaryField(BlobField):
 
 
 class UnknownField(object):
+	"""
+	A field type that was not recognized.
+	"""
 	def __init__(self, *_, **__): pass
 
 
@@ -44,23 +53,71 @@ def _cfirst(dataframe: pd.DataFrame, col_seq) -> pd.DataFrame:
 		return dataframe[col_seq + [c for c in dataframe.columns if c not in col_seq]]
 
 
+class TableDescriptionFrame(PrettyInternalDataFrame):
+	"""
+	A Pandas DataFrame subclass that contains the columns:
+		- keys name (str)
+		- type (str)
+		- length (int or None)
+		- nullable (bool)
+		- choices (set or list)
+		- primary (bool)
+		- unique (bool)
+		- constraints (list of constraint objects)
+	"""
+	pass
+
+
 __hash_regex = re.compile('[0-9a-f]{12}')
 def __looks_like_submission_hash(submission_hash: str) -> bool:
 	return submission_hash == '_' * 12 or __hash_regex.match(submission_hash) is not None
 
 
 class BaseModel(Model):
+	"""
+	A table model in Valar through Valarpy and peewee.
+	Provides functions in additional to the normal peewee functions.
+	"""
 
 	class Meta:
 		database = database
 
+	def get_data(self) -> Dict[str, Any]:
+		"""
+		Example usage:
+			>>> Users.get(Users.id == 1).get_data()  # {'id': 2, 'username': 'john', ...}
+		:return: the value of every field (column value)
+		"""
+		return self.__data__
+
 	@property
 	def _data(self) -> Dict[str, Any]:
+		"""
+		See `get_data`.
+		"""
 		# for compatibility with peewee version 2 code
 		return self.__data__
 
 	@classmethod
+	def get_description(cls) -> List[Dict[str, str]]:
+		"""
+		:return: 	A list the columns in this table, where each is a dictionary of:
+					- keys name (str)
+					- type (str)
+					- length (int or None)
+					- nullable (bool)
+					- choices (set or list)
+					- primary (bool)
+					- unique (bool)
+					- constraints (list of constraint objects)
+		"""
+		return cls._description()
+
+	@classmethod
 	def _description(cls) -> List[Dict[str, str]]:
+		"""
+		See `get_description`.
+		"""
 		return [
 			{
 				'name': v.name,
@@ -76,13 +133,44 @@ class BaseModel(Model):
 		]
 
 	@classmethod
-	def _description_df(cls) -> pd.DataFrame:
-		# noinspection PyTypeChecker
-		df = pd.DataFrame.from_dict(cls._description())
-		return _cfirst(df, ['name', 'type', 'length', 'nullable', 'choices', 'primary', 'unique'])
+	def get_description_df(cls) -> TableDescriptionFrame:
+		"""
+		Gets a description of this table as a Pandas DataFrame.
+		Example usage:
+			>>> Users.get_description_df()
+		:return: 	A TableDescriptionFrame (Pandas DataFrame subclass) of the columns:
+					- keys name (str)
+					- type (str)
+					- length (int or None)
+					- nullable (bool)
+					- choices (set or list)
+					- primary (bool)
+					- unique (bool)
+					- constraints (list of constraint objects)
+		"""
+		return cls._description_df()
 
 	@classmethod
-	def _schema_lines(cls):
+	def _description_df(cls) -> TableDescriptionFrame:
+		"""
+		See `get_description_df`.
+		"""
+		# noinspection PyTypeChecker
+		df = pd.DataFrame.from_dict(cls._description())
+		return TableDescriptionFrame(_cfirst(df, ['name', 'type', 'length', 'nullable', 'choices', 'primary', 'unique']))
+
+	@classmethod
+	def get_schema_lines(cls) -> str:
+		"""
+		:return: A string that is **approximately** the text returned by the SQL `SHOW CREATE TABLE tablename`
+		"""
+		return cls._schema_lines()
+
+	@classmethod
+	def _schema_lines(cls) -> str:
+		"""
+		See `_schema_lines`.
+		"""
 		s = ''
 		for d in cls._description():
 			s += ' '.join([
@@ -96,6 +184,22 @@ class BaseModel(Model):
 
 	@classmethod
 	def fetch_or_none(cls, thing: Union[Integral, str, peewee.Model]) -> Optional[peewee.Model]:
+		"""
+		Gets the first (which is unique) match of the row by:
+			-   instance of this class (just returns it)
+			-   `id` columns (if `thing` is an integer-like type
+			-   any of this class's unique string columns;
+				more specifically, a column that is marked in SQL as both (`VARCHAR`, `CHAR`, or `ENUM`) and `UNIQUE`
+		Also see `fetch`, which raises an error if then row was not found.
+		Example usage:
+			>>> # assuming John has ID 2
+			>>> user = Users.fetch('john')
+			>>> print(user)  # Users(2)
+		:param thing: A string, int that
+		:return: The Peewee row instance that was found OR None if it does not exist
+		:raises ValarTableTypeError: If `thing` is an instance of BaseModel of the wrong type (not this class)
+		:raises TypeError: If `thing` was not a str, int-like, or a BaseModel
+		"""
 		if isinstance(thing, cls):
 			return thing
 		elif isinstance(thing, peewee.Model):
@@ -110,15 +214,47 @@ class BaseModel(Model):
 
 	@classmethod
 	def fetch(cls, thing: Union[Integral, str, peewee.Model]) -> peewee.Model:
+		"""
+		Gets the first (which is unique) match of the row by:
+			-   instance of this class (just returns it)
+			-   `id` columns (if `thing` is an integer-like type
+			-   any of this class's unique string columns;
+				more specifically, a column that is marked in SQL as both (`VARCHAR`, `CHAR`, or `ENUM`) and `UNIQUE`
+		Also see `fetch_or_none`, which returns None if the row was not found
+		Example usage:
+			>>> # assuming John has ID 2
+			>>> user = Users.fetch('john')
+			>>> print(user)  # Users(2)
+		:param thing: A string, int that
+		:return: The Peewee row instance that was found
+		:raises A ValarLookupError If the row was not found
+		:raises ValarTableTypeError: If `thing` is an instance of BaseModel of the wrong type (not this class)
+		:raises TypeError: If `thing` was not a str, int-like, or a BaseModel
+		"""
 		found = cls.fetch_or_none(thing)
 		if found is None:
 			raise ValarLookupError("Could not find {} in {}".format(thing, cls))
 		return found
 	
 	@classmethod
-	def fetch_all(cls, things: Iterable[Union[Integral, str, peewee.Model]]) -> peewee.Model:
+	def fetch_all(cls, things: Iterable[Union[Integral, str, peewee.Model]]) -> Sequence[peewee.Model]:
 		"""
-			Does as few queries as possible.
+			Fetches rows corresponding to `things` from their instances, IDs, or values from unique columns.
+			See `fetch` for full information.
+			Also see `fetch_all_or_none` for a similar function.
+			This method is preferrable to calling `fetch` repeatedly because it minimizes the number of queries.
+			Specifically, it will perform 0, 1, or 2 queries depending on the passed types:
+				- If only instances are passed, it just returns them (0 queries)
+				- If only IDs or only string values are passed, it performs 1 query
+				- If both IDs and string values are passed, it performs 2 queries
+			Example usage:
+				>>> # assuming John has ID 2 and Alex has user ID 14
+				>>> users = Users.fetch_all(['john', 14, 'john', Users.get(Users.id == 2)])
+				>>> print(users)  # [Users(2), Users(14), Users(2), Users(2)]
+			:return: A sequence of the rows found, in the same order as they were passed
+			:raises ValarLookupError: If any of the elements of `things` was not found
+			:raises ValarTableTypeError: If an instance of a BaseModel of the wrong type (not this class) was passed
+			:raises TypeError: If the type of an element was otherwise invalid (not str, BaseModel, or int-like)
 		"""
 		def _x(thing):
 			if thing is None: raise ValarLookupError("Could not find {} in {}".format(thing, cls))
@@ -126,18 +262,39 @@ class BaseModel(Model):
 		return [_x(thing) for thing in cls.fetch_all_or_none(things)]
 	
 	@classmethod
-	def fetch_all_or_none(cls, things: Iterable[Union[Integral, str, peewee.Model]], join_fn: Optional[Callable[[peewee.Expression], peewee.Expression]] = None) -> Optional[peewee.Model]:
+	def fetch_all_or_none(
+			cls,
+			things: Iterable[Union[Integral, str, peewee.Model]],
+			join_fn: Optional[Callable[[peewee.Expression], peewee.Expression]] = None
+	) -> Iterable[peewee.Model]:
 		"""
-			Does as few queries as possible.
+			Fetches rows corresponding to `things` from their instances, IDs, or values from unique columns.
+			See `fetch` for full information.
+			Also see `fetch_all_or_none` for a similar function.
+			This method is preferrable to calling `fetch` repeatedly because it minimizes the number of queries.
+			Specifically, it will perform 0, 1, or 2 queries depending on the passed types:
+				- If only instances are passed, it just returns them (0 queries)
+				- If only IDs or only string values are passed, it performs 1 query
+				- If both IDs and string values are passed, it performs 2 queries
+			Example usage:
+				>>> # assuming John has ID 2 and Alex has user ID 14
+				>>> users = Users.fetch_all_or_none(['john', 14, 'john', Users.get(Users.id == 2)])
+				>>> print(users)  # [Users(2), Users(14), Users(2), Users(2)]
+			:return: A sequence of the rows found, or None if they were not found; in the same order as they were passed
+			:raises ValarTableTypeError: If an instance of a BaseModel of the wrong type (not this class) was passed
+			:raises TypeError: If the type of an element was otherwise invalid (not str, BaseModel, or int-like)
 		"""
 		# modify arguments
+		things = list(things)
 		has_join_fn = join_fn is not None
 		if join_fn is None: join_fn = lambda s: s
 		# handle errors
-		if any((isinstance(thing, peewee.Model) and not isinstance(thing, cls) for thing in things)):
-			raise ValarTableTypeError("Fetching a {} on class {}".format(thing.__class__.__name__, cls.__name__))
-		if any((not isinstance(thing, (cls, Integral, str)) for thing in things)):
-			raise TypeError("Fetching a {} on unknown type {}".format(thing.__class__.__name__, cls.__name__))
+		bad_models = [isinstance(thing, peewee.Model) and not isinstance(thing, cls) for thing in things]
+		if any(bad_models):
+			raise ValarTableTypeError("Fetching a {} on invalid classes {}".format(cls.__name__, set(bad_models)))
+		bad_types = [not isinstance(thing, (cls, Integral, str)) for thing in things]
+		if any(bad_types):
+			raise TypeError("Fetching a {} on unknown types {}".format(cls.__name__, set(bad_types)))
 		# utility functions
 		def do_q(): return join_fn(cls.select())
 		def make_dct(the_type):
@@ -181,12 +338,17 @@ class BaseModel(Model):
 		return [index_to_match[i] for i in range(0, len(things))]
 		
 	@classmethod
-	def fetch_to_query(cls, thing: Union[Integral, str, peewee.Model, peewee.Expression, Sequence[peewee.Expression]]) -> List[peewee.Expression]:
+	def fetch_to_query(cls, thing: Union[Integral, str, peewee.Model, peewee.Expression, Sequence[peewee.Expression]]) -> Sequence[peewee.Expression]:
 		"""
-		Returns a Peewee query:
+		This method has limited but important reasons for being called.
+		See `fetch`, `fetch_or_none`, `fetch_all`, or `fetch_all_or_none` for more commonly used functions.
+		Returns a sequence of Peewee expressions corresponding to WHERE statements:
 			- If the instance is one of (int, str, or model), that the row is the one passed, matched by ID or unique column value as needed
-			- If the instance is a Peewee expression itself, that th expression matches
-		The query is only over a single
+			- If the instance is a Peewee expression itself, that the expression matches
+		:raises ValarTableTypeError: If `thing` is an instance of BaseModel of the wrong type (not this class)
+		:param thing: An int-type to be looked up by the `id` column, a `str` to be looked up by a unique column value, a model instance, an expression, or a list of expressions
+		:return A sequence of Peewee expressions
+		:raises TypeError: If `thing` was not a str, int-like, or a BaseModel
 		"""
 		if isinstance(thing, (Integral, str, Model)):
 			# noinspection PyTypeChecker,PyUnresolvedReferences
@@ -204,9 +366,9 @@ class BaseModel(Model):
 		cols = list(cls.__indexing_cols())
 		query = getattr(cls, cols[0]) << things
 		for col in cols[1:]:
-			query = query | (getattr(cls, cols) << things)
+			query = query | (getattr(cls, col) << things)
 		return query
-	
+
 	@classmethod
 	def __indexing_cols(cls):
 		return {k for k, v in cls._meta.fields.items() if v.unique and v.field_type in {'VARCHAR', 'CHAR', 'ENUM'}}
@@ -1046,34 +1208,34 @@ class MandosRuleTags(BaseModel):
 
 
 class Tissues(BaseModel):
-        created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-        external = CharField(column_name='external_id')
-        name = CharField(index=True)
-        ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
+		created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
+		external = CharField(column_name='external_id')
+		name = CharField(index=True)
+		ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
 
-        class Meta:
-                table_name = 'tissues'
-                indexes = (
-                        (('external', 'ref'), True),
-                )
+		class Meta:
+				table_name = 'tissues'
+				indexes = (
+						(('external', 'ref'), True),
+				)
 
 
 class MandosExpression(BaseModel):
-        confidence = CharField(index=True)
-        created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-        developmental_stage = CharField(null=True)
-        external = CharField(column_name='external_id', null=True)
-        gene = ForeignKeyField(column_name='gene_id', field='id', model=Genes)
-        level = FloatField()
-        ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
-        tissue = ForeignKeyField(column_name='tissue_id', field='id', model=Tissues)
+		confidence = CharField(index=True)
+		created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
+		developmental_stage = CharField(null=True)
+		external = CharField(column_name='external_id', null=True)
+		gene = ForeignKeyField(column_name='gene_id', field='id', model=Genes)
+		level = FloatField()
+		ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
+		tissue = ForeignKeyField(column_name='tissue_id', field='id', model=Tissues)
 
-        class Meta:
-                table_name = 'mandos_expression'
-                indexes = (
-                        (('external', 'ref'), True),
-                        (('gene', 'tissue', 'developmental_stage', 'ref'), True),
-                )
+		class Meta:
+				table_name = 'mandos_expression'
+				indexes = (
+						(('external', 'ref'), True),
+						(('gene', 'tissue', 'developmental_stage', 'ref'), True),
+				)
 
 
 class Rois(BaseModel):
@@ -1217,3 +1379,11 @@ class WellTreatments(BaseModel):
 			(('well', 'batch'), True),
 		)
 
+
+__all__ = [
+	'database', 'db',
+	'ValarLookupError', 'ValarTableTypeError',
+	'BaseModel',
+	'JOIN',
+	*[c.__name__ for c in BaseModel.__subclasses__()]
+]
