@@ -2,10 +2,11 @@
 # coding=utf-8
 
 from distutils.core import setup
+from valarpy import valarpy_version
 
 setup(
 	name='valarpy',
-	version='1.1.3',
+	version=valarpy_version,
 	description='Python connection code to Valar',
 	author='Douglas Myers-Turnbull',
 	url='https://github.com/kokellab/valarpy',

@@ -1,5 +1,7 @@
 import re
-from typing import List, Union, Dict, Any, Optional
+from collections import defaultdict
+from typing import List, Union, Dict, Any, Optional, Callable, Sequence, Iterable
+from numbers import Integral
 import peewee
 import numbers
 import pandas as pd
@@ -9,6 +11,7 @@ database = db.peewee_database
 
 
 class ValarLookupError(KeyError): pass
+class ValarTableTypeError(TypeError): pass
 
 
 class EnumField(peewee._StringField):
@@ -92,41 +95,118 @@ class BaseModel(Model):
 		return s
 
 	@classmethod
-	def fetch_or_none(cls, thing: Union[any, int, str]) -> Optional[peewee.Model]:
+	def fetch_or_none(cls, thing: Union[Integral, str, peewee.Model]) -> Optional[peewee.Model]:
 		if isinstance(thing, cls):
 			return thing
 		elif isinstance(thing, peewee.Model):
-			raise TypeError("Fetching a {} on class {}".format(thing.__class__.__name__, cls.__name__))
-		elif isinstance(thing, int) or isinstance(thing, float) or issubclass(type(thing), numbers.Integral):
+			raise ValarTableTypeError("Fetching a {} on class {}".format(thing.__class__.__name__, cls.__name__))
+		elif isinstance(thing, Integral) or isinstance(thing, float):
 			# noinspection PyUnresolvedReferences
 			return cls.get_or_none(cls.id == int(thing))
-		elif isinstance(thing, str):
-			for name_column in cls.__indexing_cols():
-				found = cls.get_or_none(getattr(cls, name_column) == str(thing))
-				if found is not None: return found
-			return None
+		elif isinstance(thing, str) and len(cls.__indexing_cols()) > 0:
+			return cls.get_or_none(cls.__name_query({thing}))
 		else:
 			raise TypeError("Fetching with unknown type {} on class {}".format(thing.__class__.__name__, cls.__name__))
 
 	@classmethod
-	def fetch(cls, thing: Union[any, int, str]):
+	def fetch(cls, thing: Union[Integral, str, peewee.Model]) -> peewee.Model:
 		found = cls.fetch_or_none(thing)
 		if found is None:
 			raise ValarLookupError("Could not find {} in {}".format(thing, cls))
 		return found
-
+	
 	@classmethod
-	def fetch_to_query(cls, thing: Union[any, int, str]) -> List[peewee.Expression]:
-		if isinstance(thing, (int, str, Model)):
+	def fetch_all(cls, things: Iterable[Union[Integral, str, peewee.Model]]) -> peewee.Model:
+		"""
+			Does as few queries as possible.
+		"""
+		def _x(thing):
+			if thing is None: raise ValarLookupError("Could not find {} in {}".format(thing, cls))
+			return thing
+		return [_x(thing) for thing in cls.fetch_all_or_none(things)]
+	
+	@classmethod
+	def fetch_all_or_none(cls, things: Iterable[Union[Integral, str, peewee.Model]], join_fn: Optional[Callable[[peewee.Expression], peewee.Expression]] = None) -> Optional[peewee.Model]:
+		"""
+			Does as few queries as possible.
+		"""
+		# modify arguments
+		has_join_fn = join_fn is not None
+		if join_fn is None: join_fn = lambda s: s
+		# handle errors
+		if any((isinstance(thing, peewee.Model) and not isinstance(thing, cls) for thing in things)):
+			raise ValarTableTypeError("Fetching a {} on class {}".format(thing.__class__.__name__, cls.__name__))
+		if any((not isinstance(thing, (cls, Integral, str)) for thing in things)):
+			raise TypeError("Fetching a {} on unknown type {}".format(thing.__class__.__name__, cls.__name__))
+		# utility functions
+		def do_q(): return join_fn(cls.select())
+		def make_dct(the_type):
+			dct = defaultdict(lambda: [])
+			for i, thing in enumerate(things):
+				if isinstance(thing, the_type):
+					dct[thing].append(i)
+			return dct
+		# now we fetch
+		# this will become a dict mapping every index in things to its instance
+		index_to_match = {}
+		# first, we can add all of the actual instances
+		# if we need to join on other tables, we'll to do queries anyway
+		model_things = make_dct(cls)
+		if has_join_fn and len(model_things) > 0:
+			for match in do_q().where(cls << list(model_things.keys())):
+				for ind in model_things[match]:
+					index_to_match[ind] = match
+		elif len(model_things) > 0:
+			for thing in model_things:
+				for ind in model_things[thing]:
+					index_to_match[ind] = thing
+		# now let's collect those that are ints and those that are strs
+		# unfortunately right now we have to do 2 queries (ID and names), or we'll get type a mismatch error
+		int_things = make_dct(Integral)
+		str_things = make_dct(str)
+		if len(int_things) > 0:
+			for match in do_q().where(cls.id << {int(t) for t, ilist in int_things.items()}):
+				for ind in int_things[match.id]:
+					index_to_match[ind] = match
+		if len(str_things) > 0:
+			for match in do_q().where(cls.__name_query(set(str_things.keys()))):
+				for col in cls.__indexing_cols():
+					my_attr = getattr(match, col)
+					if my_attr in str_things:
+						for ind in str_things[my_attr]:
+							index_to_match[ind] = match
+		# now we should have a full index
+		# just make sure we iterate in the same order, fetch, and return
+		assert {i for i in index_to_match.keys()} == set(range(0, len(things))), "Got {} instead of {}".format({i for i in index_to_match.keys()}, set(range(0, len(things))))
+		return [index_to_match[i] for i in range(0, len(things))]
+		
+	@classmethod
+	def fetch_to_query(cls, thing: Union[Integral, str, peewee.Model, peewee.Expression, Sequence[peewee.Expression]]) -> List[peewee.Expression]:
+		"""
+		Returns a Peewee query:
+			- If the instance is one of (int, str, or model), that the row is the one passed, matched by ID or unique column value as needed
+			- If the instance is a Peewee expression itself, that th expression matches
+		The query is only over a single
+		"""
+		if isinstance(thing, (Integral, str, Model)):
 			# noinspection PyTypeChecker,PyUnresolvedReferences
 			return [cls.id == cls.fetch(thing).id]
-		elif isinstance(thing, List) and all(isinstance(t, peewee.Expression) for t in thing):
+		elif isinstance(thing, Sequence) and all(isinstance(t, peewee.Expression) for t in thing):
 			return thing
 		elif isinstance(thing, peewee.Expression):
 			return [thing]
 		else:
 			raise TypeError("Invalid type for {} in {}".format(thing, cls))
 
+	@classmethod
+	def __name_query(cls, things):
+		assert len(cls.__indexing_cols()) > 0, "No name columns"
+		cols = list(cls.__indexing_cols())
+		query = getattr(cls, cols[0]) << things
+		for col in cols[1:]:
+			query = query | (getattr(cls, cols) << things)
+		return query
+	
 	@classmethod
 	def __indexing_cols(cls):
 		return {k for k, v in cls._meta.fields.items() if v.unique and v.field_type in {'VARCHAR', 'CHAR', 'ENUM'}}
@@ -327,6 +407,13 @@ class Runs(BaseModel):
 	sauron_config = ForeignKeyField(column_name='sauron_config_id', field='id', model=SauronConfigs)
 	submission = ForeignKeyField(column_name='submission_id', field='id', model=Submissions, null=True, unique=True)
 	tag = CharField(constraints=[SQL("DEFAULT ''")], unique=True)
+
+	@classmethod
+	def fetch(cls, thing: Union[int, str, BaseModel]):
+		found = cls.fetch_or_none(thing)
+		if found is None:
+			raise ValarLookupError("Could not find {} in {}".format(thing, cls))
+		return found
 
 	class Meta:
 		table_name = 'runs'
