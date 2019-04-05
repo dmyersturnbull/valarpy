@@ -1384,6 +1384,7 @@ __all__ = [
 	'database', 'db',
 	'ValarLookupError', 'ValarTableTypeError',
 	'BaseModel',
+	'Projects',
 	'JOIN',
 	*[c.__name__ for c in BaseModel.__subclasses__()]
 ]
