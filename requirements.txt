@@ -3,4 +3,4 @@ peewee == 3.9.2
 sshtunnel == 0.1.4
 numpy == 1.15.4
 pandas == 0.24.2
-git+https://github.com/kokellab/klgists.git@0.2.0#egg=klgists
+git+https://github.com/kokellab/klgists.git@0.2.1#egg=klgists
