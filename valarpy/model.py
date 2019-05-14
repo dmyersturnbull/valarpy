@@ -916,7 +916,7 @@ class CarpScans(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	datetime_scanned = DateTimeField(index=True)
 	person_scanned = ForeignKeyField(column_name='person_scanned_id', field='id', model=Users)
-	scan_type = EnumField(choices=('location', 'n_dead', 'euthanized', 'n_transfer'), index=True)
+	scan_type = EnumField(choices=('euthanized','n_transfer','n_fish_main_sys','n_dead','location'), index=True)
 	scan_value = CharField(constraints=[SQL("DEFAULT ''")], index=True)
 	tank = ForeignKeyField(column_name='tank_id', field='id', model=CarpTanks)
 
