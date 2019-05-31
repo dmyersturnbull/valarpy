@@ -1,3 +1,4 @@
+import re
 from typing import List, Union, Dict, Any, Optional
 import peewee
 import numbers
@@ -6,7 +7,9 @@ from peewee import *
 from valarpy.global_connection import db
 database = db.peewee_database
 
+
 class ValarLookupError(KeyError): pass
+
 
 class EnumField(peewee._StringField):
 	field_type = 'ENUM'
@@ -18,6 +21,7 @@ class EnumField(peewee._StringField):
 	def get_modifiers(self):
 		return self.max_length and [self.max_length] or None
 
+
 class BinaryField(BlobField):
 	field_type = 'BINARY'
 
@@ -25,14 +29,22 @@ class BinaryField(BlobField):
 		super(BinaryField, self).__init__(args, kwargs)
 		self.max_length = max_length
 
+
 class UnknownField(object):
 	def __init__(self, *_, **__): pass
+
 
 def _cfirst(dataframe: pd.DataFrame, col_seq) -> pd.DataFrame:
 	if len(dataframe) == 0:  # will break otherwise
 		return dataframe
 	else:
 		return dataframe[col_seq + [c for c in dataframe.columns if c not in col_seq]]
+
+
+__hash_regex = re.compile('[0-9a-f]{12}')
+def __looks_like_submission_hash(submission_hash: str) -> bool:
+	return submission_hash == '_' * 12 or __hash_regex.match(submission_hash) is not None
+
 
 class BaseModel(Model):
 
@@ -55,7 +67,7 @@ class BaseModel(Model):
 				'choices': v.choices if hasattr(v, 'choices') else None,
 				'primary': v.primary_key,
 				'unique': v.unique,
-				'constraints': v.constraints
+				'constraints': None if v.constraints is None else len(v.constraints)
 			}
 			for k, v in cls._meta.fields.items()
 		]
@@ -81,15 +93,20 @@ class BaseModel(Model):
 
 	@classmethod
 	def fetch_or_none(cls, thing: Union[any, int, str]) -> Optional[peewee.Model]:
-		if isinstance(thing, peewee.Model):
+		if isinstance(thing, cls):
 			return thing
-		elif isinstance(thing, int) or issubclass(type(thing), numbers.Integral):
+		elif isinstance(thing, peewee.Model):
+			raise TypeError("Fetching a {} on class {}".format(thing.__class__.__name__, cls.__name__))
+		elif isinstance(thing, int) or isinstance(thing, float) or issubclass(type(thing), numbers.Integral):
 			# noinspection PyUnresolvedReferences
 			return cls.get_or_none(cls.id == int(thing))
-		for name_column in cls.__indexing_cols():
-			found = cls.get_or_none(getattr(cls, name_column) == str(thing))
-			if found is not None: return found
-		return None
+		elif isinstance(thing, str):
+			for name_column in cls.__indexing_cols():
+				found = cls.get_or_none(getattr(cls, name_column) == str(thing))
+				if found is not None: return found
+			return None
+		else:
+			raise TypeError("Fetching with unknown type {} on class {}".format(thing.__class__.__name__, cls.__name__))
 
 	@classmethod
 	def fetch(cls, thing: Union[any, int, str]):
@@ -100,10 +117,7 @@ class BaseModel(Model):
 
 	@classmethod
 	def fetch_to_query(cls, thing: Union[any, int, str]) -> List[peewee.Expression]:
-		if isinstance(thing, int) or issubclass(type(thing), numbers.Integral):
-			# noinspection PyUnresolvedReferences
-			return [cls.id == thing]
-		elif isinstance(thing, (int, str, Model)):
+		if isinstance(thing, (int, str, Model)):
 			# noinspection PyTypeChecker,PyUnresolvedReferences
 			return [cls.id == cls.fetch(thing).id]
 		elif isinstance(thing, List) and all(isinstance(t, peewee.Expression) for t in thing):
