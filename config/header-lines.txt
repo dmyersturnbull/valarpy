@@ -14,6 +14,7 @@ class ValarLookupError(KeyError): pass
 class ValarTableTypeError(TypeError): pass
 
 
+
 class EnumField(peewee._StringField):
 	"""
 	A MySQL `ENUM` field type.
@@ -66,7 +67,6 @@ class TableDescriptionFrame(PrettyInternalDataFrame):
 		- constraints (list of constraint objects)
 	"""
 	pass
-
 
 __hash_regex = re.compile('[0-9a-f]{12}')
 def __looks_like_submission_hash(submission_hash: str) -> bool:
