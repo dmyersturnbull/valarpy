@@ -235,7 +235,7 @@ class BaseModel(Model):
 		if found is None:
 			raise ValarLookupError("Could not find {} in {}".format(thing, cls))
 		return found
-	
+
 	@classmethod
 	def fetch_all(cls, things: Iterable[Union[Integral, str, peewee.Model]]) -> Sequence[peewee.Model]:
 		"""
@@ -260,7 +260,7 @@ class BaseModel(Model):
 			if thing is None: raise ValarLookupError("Could not find {} in {}".format(thing, cls))
 			return thing
 		return [_x(thing) for thing in cls.fetch_all_or_none(things)]
-	
+
 	@classmethod
 	def fetch_all_or_none(
 			cls,
@@ -336,7 +336,7 @@ class BaseModel(Model):
 		# just make sure we iterate in the same order, fetch, and return
 		assert {i for i in index_to_match.keys()} == set(range(0, len(things))), "Got {} instead of {}".format({i for i in index_to_match.keys()}, set(range(0, len(things))))
 		return [index_to_match[i] for i in range(0, len(things))]
-		
+
 	@classmethod
 	def fetch_to_query(cls, thing: Union[Integral, str, peewee.Model, peewee.Expression, Sequence[peewee.Expression]]) -> Sequence[peewee.Expression]:
 		"""
@@ -382,22 +382,20 @@ class Suppliers(BaseModel):
 	class Meta:
 		table_name = 'suppliers'
 
-
 class PlateTypes(BaseModel):
 	n_columns = IntegerField()
 	n_rows = IntegerField()
 	name = CharField(null=True)
-	opacity = EnumField(choices=('opaque','transparent'))
+	opacity = EnumField(choices=('opaque','transparent'))  # auto-corrected to Enum
 	part_number = CharField(index=True, null=True)
 	supplier = ForeignKeyField(column_name='supplier_id', field='id', model=Suppliers, null=True)
-	well_shape = EnumField(choices=('round','square','rectangular'))
+	well_shape = EnumField(choices=('round','square','rectangular'))  # auto-corrected to Enum
 
 	class Meta:
 		table_name = 'plate_types'
 		indexes = (
 			(('n_rows', 'n_columns'), False),
 		)
-
 
 class Users(BaseModel):
 	bcrypt_hash = CharField(index=True, null=True)
@@ -410,7 +408,6 @@ class Users(BaseModel):
 	class Meta:
 		table_name = 'users'
 
-
 class Plates(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	datetime_plated = DateTimeField(index=True, null=True)
@@ -419,7 +416,6 @@ class Plates(BaseModel):
 
 	class Meta:
 		table_name = 'plates'
-
 
 class TransferPlates(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -436,7 +432,6 @@ class TransferPlates(BaseModel):
 	class Meta:
 		table_name = 'transfer_plates'
 
-
 class Batteries(BaseModel):
 	assays_sha1 = BlobField(index=True)  # auto-corrected to BlobField
 	author = ForeignKeyField(column_name='author_id', field='id', model=Users, null=True)
@@ -446,11 +441,10 @@ class Batteries(BaseModel):
 	length = IntegerField(index=True)
 	name = CharField(unique=True)
 	notes = CharField(null=True)
-	template = IntegerField(column_name='template_id', index=True, null=True)
+	template_id = IntegerField(index=True, null=True)
 
 	class Meta:
 		table_name = 'batteries'
-
 
 class ProjectTypes(BaseModel):
 	description = TextField()
@@ -458,7 +452,6 @@ class ProjectTypes(BaseModel):
 
 	class Meta:
 		table_name = 'project_types'
-
 
 class Superprojects(BaseModel):
 	active = IntegerField(constraints=[SQL("DEFAULT 1")])
@@ -487,7 +480,6 @@ class TemplatePlates(BaseModel):
 	class Meta:
 		table_name = 'template_plates'
 
-
 class Experiments(BaseModel):
 	active = IntegerField(constraints=[SQL("DEFAULT 1")])
 	battery = ForeignKeyField(column_name='battery_id', field='id', model=Batteries)
@@ -504,7 +496,6 @@ class Experiments(BaseModel):
 	class Meta:
 		table_name = 'experiments'
 
-
 class Saurons(BaseModel):
 	active = IntegerField(constraints=[SQL("DEFAULT 0")], index=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -512,7 +503,6 @@ class Saurons(BaseModel):
 
 	class Meta:
 		table_name = 'saurons'
-
 
 class SauronConfigs(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -525,7 +515,6 @@ class SauronConfigs(BaseModel):
 		indexes = (
 			(('sauron', 'datetime_changed'), True),
 		)
-
 
 class Submissions(BaseModel):
 	acclimation_sec = IntegerField(null=True)
@@ -543,7 +532,6 @@ class Submissions(BaseModel):
 	class Meta:
 		table_name = 'submissions'
 
-
 class ConfigFiles(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	text_sha1 = BlobField(index=True)  # auto-corrected to BlobField
@@ -551,7 +539,6 @@ class ConfigFiles(BaseModel):
 
 	class Meta:
 		table_name = 'config_files'
-
 
 class Runs(BaseModel):
 	acclimation_sec = IntegerField(index=True, null=True)
@@ -570,16 +557,8 @@ class Runs(BaseModel):
 	submission = ForeignKeyField(column_name='submission_id', field='id', model=Submissions, null=True, unique=True)
 	tag = CharField(constraints=[SQL("DEFAULT ''")], unique=True)
 
-	@classmethod
-	def fetch(cls, thing: Union[int, str, BaseModel]):
-		found = cls.fetch_or_none(thing)
-		if found is None:
-			raise ValarLookupError("Could not find {} in {}".format(thing, cls))
-		return found
-
 	class Meta:
 		table_name = 'runs'
-
 
 class TemplateAssays(BaseModel):
 	author = ForeignKeyField(column_name='author_id', field='id', model=Users, null=True)
@@ -590,7 +569,6 @@ class TemplateAssays(BaseModel):
 
 	class Meta:
 		table_name = 'template_assays'
-
 
 class Assays(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -607,7 +585,6 @@ class Assays(BaseModel):
 			(('name', 'frames_sha1'), True),
 		)
 
-
 class ControlTypes(BaseModel):
 	description = CharField()
 	drug_related = IntegerField(constraints=[SQL("DEFAULT 1")], index=True)
@@ -618,21 +595,19 @@ class ControlTypes(BaseModel):
 	class Meta:
 		table_name = 'control_types'
 
-
 class GeneticVariants(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	creator = ForeignKeyField(column_name='creator_id', field='id', model=Users)
 	date_created = DateField(null=True)
 	father = ForeignKeyField(column_name='father_id', field='id', model='self', null=True)
 	fully_annotated = IntegerField(constraints=[SQL("DEFAULT 0")])
-	lineage_type = EnumField(choices=('injection','cross','selection','wild-type'), index=True, null=True)
+	lineage_type = EnumField(choices=('injection','cross','selection','wild-type'), index=True, null=True)  # auto-corrected to Enum
 	mother = ForeignKeyField(backref='genetic_variants_mother_set', column_name='mother_id', field='id', model='self', null=True)
 	name = CharField(unique=True)
 	notes = TextField(null=True)
 
 	class Meta:
 		table_name = 'genetic_variants'
-
 
 class Wells(BaseModel):
 	age = IntegerField(null=True)
@@ -650,13 +625,12 @@ class Wells(BaseModel):
 			(('run', 'well_index'), True),
 		)
 
-
 class Annotations(BaseModel):
 	annotator = ForeignKeyField(column_name='annotator_id', field='id', model=Users)
 	assay = ForeignKeyField(column_name='assay_id', field='id', model=Assays, null=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	description = TextField(null=True)
-	level = EnumField(choices=('0:good','1:note','2:caution','3:warning','4:danger','9:deleted','to_fix','fixed'), constraints=[SQL("DEFAULT '1:note'")], index=True)
+	level = EnumField(choices=('0:good','1:note','2:caution','3:warning','4:danger','9:deleted','to_fix','fixed'), constraints=[SQL("DEFAULT '1:note'")], index=True)  # auto-corrected to Enum
 	name = CharField(index=True, null=True)
 	run = ForeignKeyField(column_name='run_id', field='id', model=Runs, null=True)
 	submission = ForeignKeyField(column_name='submission_id', field='id', model=Submissions, null=True)
@@ -666,14 +640,12 @@ class Annotations(BaseModel):
 	class Meta:
 		table_name = 'annotations'
 
-
 class ApiKeys(BaseModel):
 	name = CharField()
 	value = CharField()
 
 	class Meta:
 		table_name = 'api_keys'
-
 
 class AssayParams(BaseModel):
 	assay = ForeignKeyField(column_name='assay_id', field='id', model=Assays)
@@ -686,7 +658,6 @@ class AssayParams(BaseModel):
 			(('name', 'assay'), True),
 		)
 
-
 class AssayPositions(BaseModel):
 	assay = ForeignKeyField(column_name='assay_id', field='id', model=Assays)
 	battery = ForeignKeyField(column_name='battery_id', field='id', model=Batteries)
@@ -697,7 +668,6 @@ class AssayPositions(BaseModel):
 		indexes = (
 			(('battery', 'assay', 'start'), True),
 		)
-
 
 class AudioFiles(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -711,7 +681,6 @@ class AudioFiles(BaseModel):
 	class Meta:
 		table_name = 'audio_files'
 
-
 class Locations(BaseModel):
 	active = IntegerField(constraints=[SQL("DEFAULT 1")])
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -724,25 +693,20 @@ class Locations(BaseModel):
 	class Meta:
 		table_name = 'locations'
 
-
 class Refs(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	datetime_downloaded = DateTimeField(null=True)
 	description = CharField(null=True)
-	external_version = CharField(null=True)
+	external_version = CharField(index=True, null=True)
 	name = CharField(unique=True)
 	url = CharField(index=True, null=True)
 
 	class Meta:
 		table_name = 'refs'
-		indexes = (
-			(('name', 'external_version'), True),
-		)
-
 
 class Compounds(BaseModel):
-	chembl = CharField(column_name='chembl_id', index=True, null=True)
-	chemspider = IntegerField(column_name='chemspider_id', null=True)
+	chembl_id = CharField(index=True, null=True)
+	chemspider_id = IntegerField(null=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	inchi = CharField()
 	inchikey = CharField(unique=True)
@@ -752,7 +716,6 @@ class Compounds(BaseModel):
 	class Meta:
 		table_name = 'compounds'
 
-
 class Batches(BaseModel):
 	amount = CharField(null=True)
 	box_number = IntegerField(index=True, null=True)
@@ -760,7 +723,7 @@ class Batches(BaseModel):
 	concentration_millimolar = FloatField(null=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	date_ordered = DateField(index=True, null=True)
-	legacy_internal = CharField(column_name='legacy_internal_id', index=True, null=True)
+	legacy_internal_id = CharField(index=True, null=True)
 	location = ForeignKeyField(column_name='location_id', field='id', model=Locations, null=True)
 	location_note = CharField(null=True)
 	lookup_hash = CharField(unique=True)
@@ -783,7 +746,6 @@ class Batches(BaseModel):
 			(('box_number', 'well_number'), True),
 		)
 
-
 class BatchLabels(BaseModel):
 	batch = ForeignKeyField(column_name='batch_id', field='id', model=Batches)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -793,31 +755,31 @@ class BatchLabels(BaseModel):
 	class Meta:
 		table_name = 'batch_labels'
 
-
 class BiomarkerExperiments(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	datetime_collected = DateTimeField()
 	datetime_prepared = DateTimeField()
 	description = CharField()
 	experimentalist = ForeignKeyField(column_name='experimentalist_id', field='id', model=Users)
-	kind = EnumField(choices=('ms','rna-seq','imaging','other'))
+	kind = EnumField(choices=('ms','rna-seq','imaging','other'))  # auto-corrected to Enum
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
 	tag = CharField(unique=True)
 
 	class Meta:
 		table_name = 'biomarker_experiments'
 
-
 class Genes(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	description = CharField(null=True)
 	name = CharField(index=True, null=True)
 	pub_link = CharField(index=True, null=True)
-	sequence = TextField(null=True)
+	raw_file = BlobField(null=True)  # auto-corrected to BlobField
+	raw_file_sha1 = BlobField(null=True)  # auto-corrected to BlobField
+	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
+	user = ForeignKeyField(column_name='user_id', field='id', model=Users)
 
 	class Meta:
 		table_name = 'genes'
-
 
 class Biomarkers(BaseModel):
 	is_gene = ForeignKeyField(column_name='is_gene_id', field='id', model=Genes, null=True)
@@ -826,7 +788,6 @@ class Biomarkers(BaseModel):
 
 	class Meta:
 		table_name = 'biomarkers'
-
 
 class BiomarkerSamples(BaseModel):
 	control_type = ForeignKeyField(column_name='control_type_id', field='id', model=ControlTypes)
@@ -841,17 +802,16 @@ class BiomarkerSamples(BaseModel):
 			(('name', 'experiment'), True),
 		)
 
-
 class BiomarkerLevels(BaseModel):
 	biomarker = ForeignKeyField(column_name='biomarker_id', field='id', model=Biomarkers)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	fold_change = FloatField(null=True)
 	full_value = CharField()
 	sample = ForeignKeyField(column_name='sample_id', field='id', model=BiomarkerSamples)
-	tissue = IntegerField(column_name='tissue_id', null=True)
+	tissue_id = IntegerField(null=True)
+
 	class Meta:
 		table_name = 'biomarker_levels'
-
 
 class BiomarkerTreatments(BaseModel):
 	batch = ForeignKeyField(column_name='batch_id', field='id', model=Batches)
@@ -865,15 +825,13 @@ class BiomarkerTreatments(BaseModel):
 			(('sample', 'batch'), True),
 		)
 
-
 class CarpProjectTypes(BaseModel):
-	base_type = EnumField(choices=('CRISPR','driver or reporter','driver and reporter','other'))
+	base_type = EnumField(choices=('CRISPR','driver or reporter','driver and reporter','other'))  # auto-corrected to Enum
 	description = TextField(null=True)
 	name = CharField(unique=True)
 
 	class Meta:
 		table_name = 'carp_project_types'
-
 
 class CarpProjects(BaseModel):
 	ancestor = ForeignKeyField(column_name='ancestor_id', field='id', model='self', null=True)
@@ -887,7 +845,6 @@ class CarpProjects(BaseModel):
 	class Meta:
 		table_name = 'carp_projects'
 
-
 class CarpTankTypes(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	description = CharField()
@@ -897,12 +854,11 @@ class CarpTankTypes(BaseModel):
 	class Meta:
 		table_name = 'carp_tank_types'
 
-
 class CarpTanks(BaseModel):
 	alive = IntegerField(constraints=[SQL("DEFAULT 1")])
 	birthdate = DateField(index=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-	internal = CharField(column_name='internal_id', unique=True)
+	internal_id = CharField(unique=True)
 	notes = TextField(null=True)
 	project = ForeignKeyField(column_name='project_id', field='id', model=CarpProjects)
 	tank_type = ForeignKeyField(column_name='tank_type_id', field='id', model=CarpTankTypes)
@@ -911,12 +867,11 @@ class CarpTanks(BaseModel):
 	class Meta:
 		table_name = 'carp_tanks'
 
-
 class CarpScans(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	datetime_scanned = DateTimeField(index=True)
 	person_scanned = ForeignKeyField(column_name='person_scanned_id', field='id', model=Users)
-	scan_type = EnumField(choices=('euthanized','n_transfer','n_fish_main_sys','n_dead','location'), index=True)
+	scan_type = EnumField(choices=('euthanized','n_transfer','n_fish_main_sys','n_dead','location'), index=True, null=True)  # auto-corrected to Enum
 	scan_value = CharField(constraints=[SQL("DEFAULT ''")], index=True)
 	tank = ForeignKeyField(column_name='tank_id', field='id', model=CarpTanks)
 
@@ -925,7 +880,6 @@ class CarpScans(BaseModel):
 		indexes = (
 			(('tank', 'scan_type', 'datetime_scanned'), True),
 		)
-
 
 class CarpSystemData(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -938,7 +892,6 @@ class CarpSystemData(BaseModel):
 		indexes = (
 			(('name', 'datetime_scanned'), True),
 		)
-
 
 class CarpTasks(BaseModel):
 	description = TextField(null=True)
@@ -958,7 +911,6 @@ class CarpTasks(BaseModel):
 			(('name', 'project_type'), True),
 		)
 
-
 class CarpTankTasks(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	notes = CharField(constraints=[SQL("DEFAULT ''")])
@@ -968,18 +920,16 @@ class CarpTankTasks(BaseModel):
 	class Meta:
 		table_name = 'carp_tank_tasks'
 
-
 class Sensors(BaseModel):
-	blob_type = EnumField(choices=('assay_start','protocol_start','every_n_milliseconds','every_n_frames','arbitrary'), null=True)
+	blob_type = EnumField(choices=('assay_start','protocol_start','every_n_milliseconds','every_n_frames','arbitrary'), null=True)  # auto-corrected to Enum
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-	data_type = EnumField(choices=('byte','short','int','float','double','unsigned_byte','unsigned_short','unsigned_int','unsigned_float','unsigned_double','utf8_char'))
+	data_type = EnumField(choices=('byte','short','int','float','double','unsigned_byte','unsigned_short','unsigned_int','unsigned_float','unsigned_double','utf8_char','long','unsigned_long','other'))  # auto-corrected to Enum
 	description = CharField(null=True)
 	n_between = IntegerField(null=True)
 	name = CharField(unique=True)
 
 	class Meta:
 		table_name = 'sensors'
-
 
 class Stimuli(BaseModel):
 	analog = IntegerField(constraints=[SQL("DEFAULT 0")])
@@ -994,7 +944,6 @@ class Stimuli(BaseModel):
 	class Meta:
 		table_name = 'stimuli'
 
-
 class ComponentChecks(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	data = BlobField(null=True)  # auto-corrected to BlobField
@@ -1008,7 +957,6 @@ class ComponentChecks(BaseModel):
 	class Meta:
 		table_name = 'component_checks'
 
-
 class CompoundLabels(BaseModel):
 	compound = ForeignKeyField(column_name='compound_id', field='id', model=Compounds)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -1018,17 +966,15 @@ class CompoundLabels(BaseModel):
 	class Meta:
 		table_name = 'compound_labels'
 
-
 class Features(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-	data_type = EnumField(choices=('byte','short','int','float','double','unsigned_byte','unsigned_short','unsigned_int','unsigned_float','unsigned_double','utf8_char'), constraints=[SQL("DEFAULT 'float'")])
+	data_type = EnumField(choices=('byte','short','int','float','double','unsigned_byte','unsigned_short','unsigned_int','unsigned_float','unsigned_double','utf8_char'), constraints=[SQL("DEFAULT 'float'")])  # auto-corrected to Enum
 	description = CharField()
 	dimensions = CharField()
 	name = CharField(unique=True)
 
 	class Meta:
 		table_name = 'features'
-
 
 class GeneLabels(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -1042,7 +988,6 @@ class GeneLabels(BaseModel):
 			(('gene', 'name', 'ref'), True),
 		)
 
-
 class GeneticConstructs(BaseModel):
 	bacterial_strain = CharField(index=True, null=True)
 	box_number = IntegerField(index=True)
@@ -1050,7 +995,7 @@ class GeneticConstructs(BaseModel):
 	creator = ForeignKeyField(column_name='creator_id', field='id', model=Users)
 	date_made = DateTimeField(index=True, null=True)
 	description = CharField()
-	kind = EnumField(choices=('plasmid','guide','morpholino','other'), index=True)
+	kind = EnumField(choices=('plasmid','guide','morpholino','other'), index=True)  # auto-corrected to Enum
 	location = ForeignKeyField(column_name='location_id', field='id', model=Locations, null=True)
 	name = CharField(unique=True)
 	notes = TextField(null=True)
@@ -1070,13 +1015,11 @@ class GeneticConstructs(BaseModel):
 			(('box_number', 'tube_number'), True),
 		)
 
-
 class GeneticConstructFeatures(BaseModel):
 	construct = ForeignKeyField(column_name='construct_id', field='id', model=GeneticConstructs)
 	end = BigIntegerField(null=True)
 	gene = ForeignKeyField(column_name='gene_id', field='id', model=Genes, null=True)
 	is_complement = IntegerField(null=True)
-	kind = CharField()
 	name = CharField()
 	start = BigIntegerField(null=True)
 
@@ -1086,31 +1029,18 @@ class GeneticConstructFeatures(BaseModel):
 			(('gene', 'construct'), True),
 		)
 
-
 class GeneticEvents(BaseModel):
+	construct = ForeignKeyField(column_name='construct_id', field='id', model=GeneticConstructs, null=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	description = CharField(null=True)
-	endogenous_gene = ForeignKeyField(column_name='endogenous_gene_id', field='id', model=Genes, null=True)
-	endogenous_gene_position = IntegerField(null=True)
+	gene = ForeignKeyField(column_name='gene_id', field='id', model=Genes, null=True)
 	injection_mix = CharField(null=True)
-	on_reverse_strand = IntegerField(null=True)
+	notes = TextField(null=True)
 	user = ForeignKeyField(column_name='user_id', field='id', model=Users)
 	variant = ForeignKeyField(column_name='variant_id', field='id', model=GeneticVariants, null=True)
 
 	class Meta:
 		table_name = 'genetic_events'
-
-
-class GeneticKnockins(BaseModel):
-	event = ForeignKeyField(column_name='event_id', field='id', model=GeneticEvents)
-	gene = ForeignKeyField(column_name='gene_id', field='id', model=Genes)
-
-	class Meta:
-		table_name = 'genetic_knockins'
-		indexes = (
-			(('gene', 'event'), True),
-		)
-
 
 class LogFiles(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -1121,6 +1051,33 @@ class LogFiles(BaseModel):
 	class Meta:
 		table_name = 'log_files'
 
+class Tissues(BaseModel):
+	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
+	external_id = CharField()
+	name = CharField(index=True)
+	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
+
+	class Meta:
+		table_name = 'tissues'
+		indexes = (
+			(('external_id', 'ref'), True),
+		)
+
+class MandosExpression(BaseModel):
+	confidence = CharField(index=True)
+	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
+	developmental_stage = CharField(null=True)
+	external_id = CharField(null=True)
+	gene = ForeignKeyField(column_name='gene_id', field='id', model=Genes)
+	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
+	tissue = ForeignKeyField(column_name='tissue_id', field='id', model=Tissues)
+
+	class Meta:
+		table_name = 'mandos_expression'
+		indexes = (
+			(('external_id', 'ref'), True),
+			(('gene', 'tissue', 'developmental_stage', 'ref'), True),
+		)
 
 class MandosInfo(BaseModel):
 	compound = ForeignKeyField(column_name='compound_id', field='id', model=Compounds)
@@ -1135,19 +1092,25 @@ class MandosInfo(BaseModel):
 			(('name', 'ref', 'compound'), True),
 		)
 
-
 class MandosObjects(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-	external = CharField(column_name='external_id', index=True)
+	external_id = CharField(index=True)
 	name = CharField(null=True)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
 
 	class Meta:
 		table_name = 'mandos_objects'
 		indexes = (
-			(('ref', 'external'), True),
+			(('ref', 'external_id'), True),
 		)
 
+class MandosObjectLinks(BaseModel):
+	child = ForeignKeyField(column_name='child_id', field='id', model=MandosObjects)
+	parent = ForeignKeyField(backref='mandos_objects_parent_set', column_name='parent_id', field='id', model=MandosObjects)
+	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
+
+	class Meta:
+		table_name = 'mandos_object_links'
 
 class MandosObjectTags(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -1162,36 +1125,33 @@ class MandosObjectTags(BaseModel):
 			(('object', 'ref', 'name', 'value'), True),
 		)
 
-
 class MandosPredicates(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-	external = CharField(column_name='external_id', index=True, null=True)
-	kind = EnumField(choices=('target','class','other'))
+	external_id = CharField(index=True, null=True)
+	kind = EnumField(choices=('target','class','indication','other'))  # auto-corrected to Enum
 	name = CharField(index=True)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
 
 	class Meta:
 		table_name = 'mandos_predicates'
 		indexes = (
-			(('external', 'ref'), True),
+			(('external_id', 'ref'), True),
 			(('name', 'ref'), True),
 		)
 
-
 class MandosRules(BaseModel):
 	compound = ForeignKeyField(column_name='compound_id', field='id', model=Compounds)
-	external = CharField(column_name='external_id', index=True, null=True)
+	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
+	external_id = CharField(index=True, null=True)
 	object = ForeignKeyField(column_name='object_id', field='id', model=MandosObjects)
 	predicate = ForeignKeyField(column_name='predicate_id', field='id', model=MandosPredicates)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
-	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 
 	class Meta:
 		table_name = 'mandos_rules'
 		indexes = (
 			(('ref', 'compound', 'object', 'predicate'), True),
 		)
-
 
 class MandosRuleTags(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -1206,40 +1166,8 @@ class MandosRuleTags(BaseModel):
 			(('rule', 'ref', 'name', 'value'), True),
 		)
 
-
-class Tissues(BaseModel):
-		created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-		external = CharField(column_name='external_id')
-		name = CharField(index=True)
-		ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
-
-		class Meta:
-				table_name = 'tissues'
-				indexes = (
-						(('external', 'ref'), True),
-				)
-
-
-class MandosExpression(BaseModel):
-		confidence = CharField(index=True)
-		created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-		developmental_stage = CharField(null=True)
-		external = CharField(column_name='external_id', null=True)
-		gene = ForeignKeyField(column_name='gene_id', field='id', model=Genes)
-		level = FloatField()
-		ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
-		tissue = ForeignKeyField(column_name='tissue_id', field='id', model=Tissues)
-
-		class Meta:
-				table_name = 'mandos_expression'
-				indexes = (
-						(('external', 'ref'), True),
-						(('gene', 'tissue', 'developmental_stage', 'ref'), True),
-				)
-
-
 class Rois(BaseModel):
-	ref = IntegerField(column_name='ref_id', index=True)
+	ref_id = IntegerField(index=True)
 	well = ForeignKeyField(column_name='well_id', field='id', model=Wells)
 	x0 = IntegerField()
 	x1 = IntegerField()
@@ -1248,7 +1176,6 @@ class Rois(BaseModel):
 
 	class Meta:
 		table_name = 'rois'
-
 
 class RunTags(BaseModel):
 	name = CharField()
@@ -1260,7 +1187,6 @@ class RunTags(BaseModel):
 		indexes = (
 			(('run', 'name'), True),
 		)
-
 
 class SauronSettings(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -1274,7 +1200,6 @@ class SauronSettings(BaseModel):
 			(('sauron', 'name'), True),
 		)
 
-
 class SensorData(BaseModel):
 	floats = BlobField()  # auto-corrected to BlobField
 	floats_sha1 = BlobField(index=True)  # auto-corrected to BlobField
@@ -1283,7 +1208,6 @@ class SensorData(BaseModel):
 
 	class Meta:
 		table_name = 'sensor_data'
-
 
 class StimulusFrames(BaseModel):
 	assay = ForeignKeyField(column_name='assay_id', field='id', model=Assays)
@@ -1297,10 +1221,9 @@ class StimulusFrames(BaseModel):
 			(('assay', 'stimulus'), True),
 		)
 
-
 class SubmissionParams(BaseModel):
 	name = CharField()
-	param_type = EnumField(choices=('n_fish','compound','dose','variant','dpf','group'))
+	param_type = EnumField(choices=('n_fish','compound','dose','variant','dpf','group'))  # auto-corrected to Enum
 	submission = ForeignKeyField(column_name='submission_id', field='id', model=Submissions)
 	value = CharField()
 
@@ -1310,12 +1233,11 @@ class SubmissionParams(BaseModel):
 			(('submission', 'name'), True),
 		)
 
-
 class SubmissionRecords(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	datetime_modified = DateTimeField()
 	sauron = ForeignKeyField(column_name='sauron_id', field='id', model=Saurons)
-	status = EnumField(choices=('starting','capturing','failed','cancelled','extracting','compressing','uploading','uploaded','inserting','inserting features','inserting sensors','insert failed','available','failed_during_initialization','failed_during_capture','failed_during_postprocessing','failed_during_upload','cancelled_during_capture','finished_capture'), null=True)
+	status = EnumField(choices=('starting','capturing','failed','cancelled','extracting','compressing','uploading','uploaded','inserting','inserting features','inserting sensors','insert failed','available','failed_during_initialization','failed_during_capture','failed_during_postprocessing','failed_during_upload','cancelled_during_capture','finished_capture'), null=True)  # auto-corrected to Enum
 	submission = ForeignKeyField(column_name='submission_id', field='id', model=Submissions)
 
 	class Meta:
@@ -1323,7 +1245,6 @@ class SubmissionRecords(BaseModel):
 		indexes = (
 			(('submission', 'status', 'datetime_modified'), True),
 		)
-
 
 class TemplateStimulusFrames(BaseModel):
 	range_expression = CharField()
@@ -1334,7 +1255,6 @@ class TemplateStimulusFrames(BaseModel):
 	class Meta:
 		table_name = 'template_stimulus_frames'
 
-
 class TemplateTreatments(BaseModel):
 	batch_expression = CharField()
 	dose_expression = CharField()
@@ -1343,7 +1263,6 @@ class TemplateTreatments(BaseModel):
 
 	class Meta:
 		table_name = 'template_treatments'
-
 
 class TemplateWells(BaseModel):
 	age_expression = CharField()
@@ -1357,7 +1276,6 @@ class TemplateWells(BaseModel):
 	class Meta:
 		table_name = 'template_wells'
 
-
 class WellFeatures(BaseModel):
 	floats = BlobField()  # auto-corrected to BlobField
 	sha1 = BlobField(index=True)  # auto-corrected to BlobField
@@ -1366,7 +1284,6 @@ class WellFeatures(BaseModel):
 
 	class Meta:
 		table_name = 'well_features'
-
 
 class WellTreatments(BaseModel):
 	batch = ForeignKeyField(column_name='batch_id', field='id', model=Batches)
@@ -1378,8 +1295,6 @@ class WellTreatments(BaseModel):
 		indexes = (
 			(('well', 'batch'), True),
 		)
-
-
 __all__ = [
 	'database', 'db',
 	'ValarLookupError', 'ValarTableTypeError',
@@ -1388,3 +1303,4 @@ __all__ = [
 	'JOIN',
 	*[c.__name__ for c in BaseModel.__subclasses__()]
 ]
+
