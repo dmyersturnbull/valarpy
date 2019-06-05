@@ -732,6 +732,7 @@ class Batches(BaseModel):
 	notes = TextField(null=True)
 	person_ordered = ForeignKeyField(column_name='person_ordered', field='id', model=Users, null=True)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs, null=True)
+	solvent = IntegerField(column_name='solvent_id', index=True, null=True)
 	# hide to make queries easier
 	#solvent = ForeignKeyField(backref='compounds_solvent_set', column_name='solvent_id', field='id', model=Compounds, null=True)
 	supplier_catalog_number = CharField(null=True)
@@ -858,7 +859,7 @@ class CarpTanks(BaseModel):
 	alive = IntegerField(constraints=[SQL("DEFAULT 1")])
 	birthdate = DateField(index=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-	internal_id = CharField(unique=True)
+	internal = CharField(column_name='internal_id', unique=True)
 	notes = TextField(null=True)
 	project = ForeignKeyField(column_name='project_id', field='id', model=CarpProjects)
 	tank_type = ForeignKeyField(column_name='tank_type_id', field='id', model=CarpTankTypes)
