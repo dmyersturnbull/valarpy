@@ -723,7 +723,7 @@ class Batches(BaseModel):
 	concentration_millimolar = FloatField(null=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	date_ordered = DateField(index=True, null=True)
-	legacy_internal_id = CharField(index=True, null=True)
+	legacy_internal = CharField(column_name='legacy_internal_id', index=True, null=True)
 	location = ForeignKeyField(column_name='location_id', field='id', model=Locations, null=True)
 	location_note = CharField(null=True)
 	lookup_hash = CharField(unique=True)
