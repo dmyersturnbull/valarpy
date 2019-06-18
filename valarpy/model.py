@@ -441,7 +441,7 @@ class Batteries(BaseModel):
 	length = IntegerField(index=True)
 	name = CharField(unique=True)
 	notes = CharField(null=True)
-	template_id = IntegerField(index=True, null=True)
+	template = IntegerField(column_name='template_id', index=True, null=True)
 
 	class Meta:
 		table_name = 'batteries'
@@ -705,8 +705,8 @@ class Refs(BaseModel):
 		table_name = 'refs'
 
 class Compounds(BaseModel):
-	chembl_id = CharField(index=True, null=True)
-	chemspider_id = IntegerField(null=True)
+	chembl = CharField(column_name='chembl_id', index=True, null=True)
+	chemspider = IntegerField(column_name='chemspider_id', null=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	inchi = CharField()
 	inchikey = CharField(unique=True)
@@ -809,7 +809,7 @@ class BiomarkerLevels(BaseModel):
 	fold_change = FloatField(null=True)
 	full_value = CharField()
 	sample = ForeignKeyField(column_name='sample_id', field='id', model=BiomarkerSamples)
-	tissue_id = IntegerField(null=True)
+	tissue = IntegerField(column_name='tissue_id', null=True)
 
 	class Meta:
 		table_name = 'biomarker_levels'
@@ -1054,7 +1054,7 @@ class LogFiles(BaseModel):
 
 class Tissues(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-	external_id = CharField()
+	external = CharField(column_name='external_id')
 	name = CharField(index=True)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
 
@@ -1068,7 +1068,7 @@ class MandosExpression(BaseModel):
 	confidence = CharField(index=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	developmental_stage = CharField(null=True)
-	external_id = CharField(null=True)
+	external = CharField(column_name='external_id', index=True)
 	gene = ForeignKeyField(column_name='gene_id', field='id', model=Genes)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
 	tissue = ForeignKeyField(column_name='tissue_id', field='id', model=Tissues)
@@ -1128,7 +1128,7 @@ class MandosObjectTags(BaseModel):
 
 class MandosPredicates(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-	external_id = CharField(index=True, null=True)
+	external = CharField(column_name='external_id', index=True, null=True)
 	kind = EnumField(choices=('target','class','indication','other'))  # auto-corrected to Enum
 	name = CharField(index=True)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
@@ -1143,7 +1143,7 @@ class MandosPredicates(BaseModel):
 class MandosRules(BaseModel):
 	compound = ForeignKeyField(column_name='compound_id', field='id', model=Compounds)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-	external_id = CharField(index=True, null=True)
+	external = CharField(column_name='external_id', index=True, null=True)
 	object = ForeignKeyField(column_name='object_id', field='id', model=MandosObjects)
 	predicate = ForeignKeyField(column_name='predicate_id', field='id', model=MandosPredicates)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
@@ -1168,7 +1168,7 @@ class MandosRuleTags(BaseModel):
 		)
 
 class Rois(BaseModel):
-	ref_id = IntegerField(index=True)
+	ref = IntegerField(column_name='ref_id', index=True)
 	well = ForeignKeyField(column_name='well_id', field='id', model=Wells)
 	x0 = IntegerField()
 	x1 = IntegerField()
