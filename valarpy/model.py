@@ -499,7 +499,7 @@ class Experiments(BaseModel):
 class Saurons(BaseModel):
 	active = IntegerField(constraints=[SQL("DEFAULT 0")], index=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-	name = CharField(index=True)
+	name = CharField(unique=True)
 
 	class Meta:
 		table_name = 'saurons'
