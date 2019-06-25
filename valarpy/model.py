@@ -496,6 +496,17 @@ class Experiments(BaseModel):
 	class Meta:
 		table_name = 'experiments'
 
+class ExperimentTags(BaseModel):
+	name = CharField()
+	experiment = ForeignKeyField(column_name='experiment_id', field='id', model=Experiments)
+	value = CharField()
+
+	class Meta:
+		table_name = 'experiment_tags'
+		indexes = (
+			(('experiment', 'name'), True),
+		)
+
 class Saurons(BaseModel):
 	active = IntegerField(constraints=[SQL("DEFAULT 0")], index=True)
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -1192,13 +1203,13 @@ class RunTags(BaseModel):
 class SauronSettings(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	name = CharField(index=True)
-	sauron = ForeignKeyField(column_name='sauron', field='id', model=Saurons)
+	sauron_config = ForeignKeyField(column_name='sauron_config', field='id', model=SauronConfigs)
 	value = CharField()
 
 	class Meta:
 		table_name = 'sauron_settings'
 		indexes = (
-			(('sauron', 'name'), True),
+			(('sauron_config', 'name'), True),
 		)
 
 class SensorData(BaseModel):
