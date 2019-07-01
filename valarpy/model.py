@@ -1106,7 +1106,7 @@ class MandosInfo(BaseModel):
 
 class MandosObjects(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-	external_id = CharField(index=True)
+	external = CharField(index=True)
 	name = CharField(null=True)
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
 
