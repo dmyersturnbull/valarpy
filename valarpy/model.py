@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from typing import List, Union, Dict, Any, Optional, Callable, Sequence, Iterable
+from typing import List, Union, Dict, Any, Optional, Callable, Sequence, Iterable, Mapping
 from numbers import Integral
 import peewee
 import pandas as pd
@@ -181,6 +181,15 @@ class BaseModel(Model):
 				d['constraints']
 			]) + '\n'
 		return s
+
+	@classmethod
+	def list_where(cls, *wheres: Sequence[peewee.Expression], **values: Mapping[str, Any]):
+		query = cls.select()
+		for where in wheres:
+			query = query.where(where)
+		for name, value in values.items():
+			query = query.where(getattr(cls, name) == value)
+		return list(query)
 
 	@classmethod
 	def fetch_or_none(cls, thing: Union[Integral, str, peewee.Model], like: bool = False, regex: bool = False) -> Optional[peewee.Model]:
