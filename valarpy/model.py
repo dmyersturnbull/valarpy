@@ -1349,6 +1349,20 @@ class WellTreatments(BaseModel):
 		indexes = (
 			(('well', 'batch'), True),
 		)
+
+class BatchAnnotations(BaseModel):
+	annotator = ForeignKeyField(column_name='annotator_id', field='id', model=Users)
+	batch = ForeignKeyField(column_name='batch_id', field='id', model=Batches, null=False)
+	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
+	description = TextField(null=True)
+	level = EnumField(choices=('0:good','1:note','2:caution','3:warning','4:danger','9:deleted'), constraints=[SQL("DEFAULT '1:note'")], index=True)  # auto-corrected to Enum
+	name = CharField(index=True, null=True)
+	value = CharField(null=True)
+
+	class Meta:
+		table_name = 'batch_annotations'
+
+
 __all__ = [
 	'database', 'db',
 	'ValarLookupError', 'ValarTableTypeError',
