@@ -1,6 +1,0 @@
-PyMySQL == 0.9.3
-peewee == 3.9.6
-sshtunnel == 0.1.5
-numpy == 1.17.0
-pandas == 0.25.0
-git+https://github.com/kokellab/klgists.git@0.4.3#egg=klgists
