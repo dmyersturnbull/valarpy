@@ -4,17 +4,14 @@ __credits__ = ["Douglas Myers-Turnbull"]
 __license__ = "Apache License, Version 2.0"
 __maintainer__ = "Douglas Myers-Turnbull"
 __status__ = "Production"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 
 valarpy_version = __version__
-
-import peewee
-import pandas as pd
 
 
 class ValarpyTools:
 	@staticmethod
-	def query(query: peewee.Expression) -> pd.DataFrame:
+	def query(query):
 		return pd.DataFrame([
 			pd.Series(row._data)
 			for row in query
