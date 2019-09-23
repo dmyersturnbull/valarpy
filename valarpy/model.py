@@ -13,6 +13,12 @@ database = db.peewee_database
 class ValarLookupError(KeyError): pass
 class ValarTableTypeError(TypeError): pass
 
+def _initials(text: str) -> str:
+	s = ''
+	for i, c in enumerate(text):
+		if c==c.upper() and c!=c.lower(): s += c
+	return s
+
 
 class EnumField(peewee._StringField):
 	"""
@@ -89,6 +95,11 @@ class BaseModel(Model):
 		:return: the value of every field (column value)
 		"""
 		return self.__data__
+
+	@property
+	def sstring(self) -> str:
+		"""Short string of the ID. This can be overridden."""
+		return _initials(self.__class__.__name__[0]).lower() + str(self.id)
 
 	@property
 	def _data(self) -> Dict[str, Any]:
@@ -495,7 +506,7 @@ class ProjectTypes(BaseModel):
 	class Meta:
 		table_name = 'project_types'
 
-class Superprojects(BaseModel):
+class Projects(BaseModel):
 	active = IntegerField(constraints=[SQL("DEFAULT 1")])
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	creator = ForeignKeyField(column_name='creator_id', field='id', model=Users)
@@ -508,7 +519,7 @@ class Superprojects(BaseModel):
 	class Meta:
 		table_name = 'superprojects'
 
-Projects = Superprojects
+Superprojects = Projects
 
 class TemplatePlates(BaseModel):
 	author = ForeignKeyField(column_name='author_id', field='id', model=Users)
@@ -700,6 +711,12 @@ class ApiKeys(BaseModel):
 	class Meta:
 		table_name = 'api_keys'
 
+	@property
+	def sstring(self) -> str:
+		"""Short string of the ID. This can be overridden."""
+		return 'api.' + str(self.id)
+
+
 class AssayParams(BaseModel):
 	assay = ForeignKeyField(column_name='assay_id', field='id', model=Assays)
 	name = CharField()
@@ -753,6 +770,10 @@ class Refs(BaseModel):
 	external_version = CharField(index=True, null=True)
 	name = CharField(unique=True)
 	url = CharField(index=True, null=True)
+	@property
+	def sstring(self) -> str:
+		"""Short string of the ID. This can be overridden."""
+		return 'ref.' + str(self.id)
 
 	class Meta:
 		table_name = 'refs'
@@ -839,9 +860,14 @@ class Biomarkers(BaseModel):
 	is_gene = ForeignKeyField(column_name='is_gene_id', field='id', model=Genes, null=True)
 	name = CharField()
 	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
+	@property
+	def sstring(self) -> str:
+		"""Short string of the ID. This can be overridden."""
+		return 'bm.' + str(self.id)
 
 	class Meta:
 		table_name = 'biomarkers'
+
 
 class BiomarkerSamples(BaseModel):
 	control_type = ForeignKeyField(column_name='control_type_id', field='id', model=ControlTypes)
@@ -994,9 +1020,14 @@ class Stimuli(BaseModel):
 	name = CharField(unique=True)
 	rgb = BlobField(null=True)  # auto-corrected to BlobField
 	wavelength_nm = IntegerField(null=True)
+	@property
+	def sstring(self) -> str:
+		"""Short string of the ID. This can be overridden."""
+		return 'stim.' + str(self.id)
 
 	class Meta:
 		table_name = 'stimuli'
+
 
 class ComponentChecks(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
@@ -1227,9 +1258,14 @@ class Rois(BaseModel):
 	x1 = IntegerField()
 	y0 = IntegerField()
 	y1 = IntegerField()
+	@property
+	def sstring(self) -> str:
+		"""Short string of the ID. This can be overridden."""
+		return 'roi.' + str(self.id)
 
 	class Meta:
 		table_name = 'rois'
+
 
 class RunTags(BaseModel):
 	name = CharField()
