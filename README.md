@@ -121,7 +121,6 @@ See [more examples](https://github.com/kokellab/kokel-scripts) or the [Peewee do
 Jupyter notebooks seem to drop the connection after the first cell. To resolve this, you can avoid using a `with` statement by using:
 
 ```python
-
 db = global_connection.GlobalConnection.from_json('/home/dmyerstu/desktop/valar.json')
 db.open()
 db.connect_with_peewee()     # don't worry, this will be closed with the GlobalConnection
@@ -163,7 +162,7 @@ Make sure the release (between @ and #) matches what's in [setup.py](setup.py).
 You can also add it to another project's `requirements.txt`:
 
 ```
-git+https://github.com/kokellab/valarpy.git@0.4.1#egg=valarpy
+git+https://github.com/kokellab/valarpy.git@0.6.0#egg=valarpy
 ```
 
 Alternatively, you can install it locally. This probably isn't needed:
@@ -172,6 +171,7 @@ Alternatively, you can install it locally. This probably isn't needed:
 pip install --install-option="--prefix=$HOME/.local" .
 ```
 
+You can test the connection in a terminal by typing: `valarpy`
 
 ### generating the Peewee model
 

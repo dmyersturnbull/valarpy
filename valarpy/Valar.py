@@ -3,16 +3,23 @@ Part of Valarpy by the Kokel Lab.
 This module provides a way to connect to and load Valar.
 See the `Valar` class.
 """
-
 import os
 import logging
-from typing import Optional
-
+from pathlib import Path
+from typing import Union
 from valarpy import global_connection
 
-pexists = os.path.exists
-pfile = os.path.isfile
-valarpy_config_env_variable_name = "VALARPY_CONFIG"  # type: str
+def _get_existing_path(*paths):
+	paths = [None if p is None else Path(p) for p in paths]
+	for path in paths:
+		if path is not None and path.exists(): return path
+CONFIG_PATH = _get_existing_path(
+	os.environ.get('VALARPY_CONFIG'),
+	Path.home() / '.valarpy' / 'config.json',
+	Path.home() / '.valarpy' / 'read_only.json'
+)
+if not CONFIG_PATH.exists():
+	raise KeyError("Valarpy config is not set. Set VALARPY_CONFIG as an environment variable and make sure it exists.")
 
 
 class Valar:
@@ -24,19 +31,13 @@ class Valar:
 		>>>	import valarpy.model as model
 		>>>	print(len(model.Projects.select())
 	"""
-	config_file_path = None  # type: str
 
-	def __init__(self, config_file_path: Optional[str] = None):
-		if config_file_path is None:
-			if valarpy_config_env_variable_name not in os.environ:
-				raise ValueError('Environment variable {} is not set; set this to the correct .json file'.format(valarpy_config_env_variable_name))
-			self.config_file_path = os.environ[valarpy_config_env_variable_name]
-		else:
-			self.config_file_path = config_file_path
-		if not pexists(self.config_file_path):
-			raise ValueError("{} file {} does not exist".format(valarpy_config_env_variable_name, self.config_file_path))
-		if not pfile(self.config_file_path):
-			raise ValueError("{} file {} is not a file".format(valarpy_config_env_variable_name, self.config_file_path))
+	def __init__(self, config_file_path: Union[None, str, Path] = None):
+		self.config_file_path = CONFIG_PATH if config_file_path is None else Path(config_file_path)
+
+	def reconnect(self):
+		self.close()
+		self.open()
 
 	def open(self) -> None:
 		db = global_connection.GlobalConnection.from_json(self.config_file_path)
@@ -57,6 +58,16 @@ class Valar:
 
 	def __del__(self):
 		self.close()
+
+
+def main():
+	"""Entry point to test connection."""
+	with Valar():
+		from valarpy.model import Refs
+		print("Connection successful")
+		print("Found {} refs".format(len(list(Refs.select()))))
+if __name__ == '__main__':
+	main()
 
 
 __all__ = ['Valar', 'global_connection']

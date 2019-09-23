@@ -10,6 +10,7 @@ setup(
 	description='Python connection code to Valar',
 	author='Douglas Myers-Turnbull',
 	url='https://github.com/kokellab/valarpy',
+	entry_points={'console_scripts': ['valarpy = valarpy.Valar:main']},
 	packages=['valarpy'],
 	test_suite='tests',
 	classifiers=[
@@ -22,4 +23,3 @@ setup(
 		'Topic :: Scientific/Engineering :: Bio-Informatics'
 	]
 )
-d

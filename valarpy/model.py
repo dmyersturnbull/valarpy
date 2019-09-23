@@ -2,8 +2,8 @@ import re
 from collections import defaultdict
 from typing import List, Union, Dict, Any, Optional, Callable, Sequence, Iterable, Mapping
 from numbers import Integral
-import peewee
 import pandas as pd
+import peewee
 from peewee import *
 from klgists.pandas.extended_df import PrettyInternalDataFrame
 from valarpy.global_connection import db
