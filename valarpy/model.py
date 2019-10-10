@@ -1398,6 +1398,18 @@ class BatchAnnotations(BaseModel):
 	class Meta:
 		table_name = 'batch_annotations'
 
+class DagsToCreate(BaseModel):
+    created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
+    dag_created = IntegerField(constraints=[SQL("DEFAULT 0")])
+    feature_type = ForeignKeyField(column_name='feature_type', field='id', model=Features, null=True)
+    submission_hash = CharField()
+
+    class Meta:
+        table_name = 'dags_to_create'
+        indexes = (
+            (('submission_hash', 'feature_type'), True),
+        )
+
 
 __all__ = [
 	'database', 'db',
