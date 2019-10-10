@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from typing import List, Union, Dict, Any, Optional, Callable, Sequence, Iterable
+from typing import List, Union, Dict, Any, Optional, Callable, Sequence, Iterable, Mapping
 from numbers import Integral
 import peewee
 import pandas as pd
@@ -13,7 +13,11 @@ database = db.peewee_database
 class ValarLookupError(KeyError): pass
 class ValarTableTypeError(TypeError): pass
 
-
+def _initials(text: str) -> str:
+	s = ''
+	for i, c in enumerate(text):
+		if c==c.upper() and c!=c.lower(): s += c
+	return s
 
 class EnumField(peewee._StringField):
 	"""
@@ -97,7 +101,12 @@ class BaseModel(Model):
 		"""
 		# for compatibility with peewee version 2 code
 		return self.__data__
-
+	
+	@property
+	def sstring(self) -> str:
+		"""Short string of the ID. This can be overridden."""
+		return _initials(self.__class__.__name__[0]).lower() + str(self.id)
+	
 	@classmethod
 	def get_description(cls) -> List[Dict[str, str]]:
 		"""
@@ -181,9 +190,17 @@ class BaseModel(Model):
 				d['constraints']
 			]) + '\n'
 		return s
-
 	@classmethod
-	def fetch_or_none(cls, thing: Union[Integral, str, peewee.Model]) -> Optional[peewee.Model]:
+	def list_where(cls, *wheres: Sequence[peewee.Expression], **values: Mapping[str, Any]):
+		query = cls.select()
+		for where in wheres:
+			query = query.where(where)
+		for name, value in values.items():
+			query = query.where(getattr(cls, name) == value)
+		return list(query)
+		
+	@classmethod
+	def fetch_or_none(cls, thing: Union[Integral, str, peewee.Model], like: bool = False, regex: bool = False) -> Optional[peewee.Model]:
 		"""
 		Gets the first (which is unique) match of the row by:
 			-   instance of this class (just returns it)
@@ -208,7 +225,7 @@ class BaseModel(Model):
 			# noinspection PyUnresolvedReferences
 			return cls.get_or_none(cls.id == int(thing))
 		elif isinstance(thing, str) and len(cls.__indexing_cols()) > 0:
-			return cls.get_or_none(cls.__name_query({thing}))
+			return cls.get_or_none(cls._build_or_query({thing}, like=like, regex=regex))
 		else:
 			raise TypeError("Fetching with unknown type {} on class {}".format(thing.__class__.__name__, cls.__name__))
 
