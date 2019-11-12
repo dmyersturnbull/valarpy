@@ -391,7 +391,7 @@ class BaseModel(Model):
 	def _build_or_query(cls, values: Sequence[Union[Model, int, str]], like: bool = False, regex: bool = False) -> Optional[peewee.Expression]:
 		assert not (like and regex)
 		cols = list(cls.__indexing_cols())
-		if len(cols) == 0 or len(values) == 0: return None
+		if len(values) == 0: return None
 		ids = [i for i in values if isinstance(i, int)]
 		ids.extend([i.id for i in values if isinstance(i, cls)])
 		strs = [i for i in values if isinstance(i, str)]
@@ -1281,7 +1281,7 @@ class RunTags(BaseModel):
 class SauronSettings(BaseModel):
 	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
 	name = CharField(index=True)
-	sauron_config = ForeignKeyField(column_name='sauron_config', field='id', model=SauronConfigs)
+	sauron_config = ForeignKeyField(column_name='sauron_config_id', field='id', model=SauronConfigs)
 	value = CharField()
 
 	class Meta:
