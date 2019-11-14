@@ -1252,7 +1252,7 @@ class MandosRuleTags(BaseModel):
 		)
 
 class Rois(BaseModel):
-	ref = IntegerField(column_name='ref_id', index=True)
+	ref = ForeignKeyField(column_name='ref_id', field='id', model=Refs)
 	well = ForeignKeyField(column_name='well_id', field='id', model=Wells)
 	x0 = IntegerField()
 	x1 = IntegerField()
