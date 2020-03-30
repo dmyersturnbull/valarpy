@@ -1,4 +1,4 @@
-from klgists.db.connection import Connection
+from dscience.support.connection import Connection
 
 db = None
 

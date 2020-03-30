@@ -5,7 +5,7 @@ from numbers import Integral
 import pandas as pd
 import peewee
 from peewee import *
-from klgists.pandas.extended_df import PrettyInternalDataFrame
+from dscience.core.extended_df import SimpleFrame
 from valarpy.global_connection import db
 database = db.peewee_database
 
@@ -28,7 +28,7 @@ class EnumField(peewee._StringField):
 
 	def __init__(self, max_length=255, *args, **kwargs):
 		self.max_length = max_length
-		super(EnumField, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 	def get_modifiers(self):
 		return self.max_length and [self.max_length] or None
@@ -59,7 +59,7 @@ def _cfirst(dataframe: pd.DataFrame, col_seq) -> pd.DataFrame:
 		return dataframe[col_seq + [c for c in dataframe.columns if c not in col_seq]]
 
 
-class TableDescriptionFrame(PrettyInternalDataFrame):
+class TableDescriptionFrame(SimpleFrame):
 	"""
 	A Pandas DataFrame subclass that contains the columns:
 		- keys name (str)
@@ -228,7 +228,7 @@ class BaseModel(Model):
 			# noinspection PyUnresolvedReferences
 			return cls.get_or_none(cls.id == int(thing))
 		elif isinstance(thing, str) and len(cls.__indexing_cols()) > 0:
-			return cls.get_or_none(cls._build_or_query({thing}, like=like, regex=regex))
+			return cls.get_or_none(cls._build_or_query([thing], like=like, regex=regex))
 		else:
 			raise TypeError("Fetching with unknown type {} on class {}".format(thing.__class__.__name__, cls.__name__))
 
@@ -346,7 +346,7 @@ class BaseModel(Model):
 				for ind in int_things[match.id]:
 					index_to_match[ind] = match
 		if len(str_things) > 0:
-			for match in do_q().where(cls._build_or_query(set(str_things.keys()))):
+			for match in do_q().where(cls._build_or_query(list(set(str_things.keys())))):
 				for col in cls.__indexing_cols():
 					my_attr = getattr(match, col)
 					if my_attr in str_things:
@@ -1399,20 +1399,21 @@ class BatchAnnotations(BaseModel):
 		table_name = 'batch_annotations'
 
 class DagsToCreate(BaseModel):
-    created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-    dag_created = IntegerField(constraints=[SQL("DEFAULT 0")])
-    feature_type = ForeignKeyField(column_name='feature_type', field='id', model=Features, null=True)
-    submission_hash = CharField()
+	created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
+	dag_created = IntegerField(constraints=[SQL("DEFAULT 0")])
+	feature_type = ForeignKeyField(column_name='feature_type', field='id', model=Features, null=True)
+	submission_hash = CharField()
 
-    class Meta:
-        table_name = 'dags_to_create'
-        indexes = (
-            (('submission_hash', 'feature_type'), True),
-        )
+	class Meta:
+		table_name = 'dags_to_create'
+		indexes = (
+			(('submission_hash', 'feature_type'), True),
+		)
 
 
 __all__ = [
-	'database', 'db',
+	'database',
+	'db',
 	'ValarLookupError', 'ValarTableTypeError',
 	'BaseModel',
 	'Projects',

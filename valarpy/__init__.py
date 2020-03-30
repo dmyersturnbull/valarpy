@@ -4,7 +4,7 @@ __credits__ = ["Douglas Myers-Turnbull"]
 __license__ = "Apache License, Version 2.0"
 __maintainer__ = "Douglas Myers-Turnbull"
 __status__ = "Production"
-__version__ = "1.6.2"
+__version__ = "1.7.0"
 
 valarpy_version = __version__
 
