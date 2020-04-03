@@ -1,6 +1,6 @@
-PyMySQL >=0.9.3
-peewee >=3.13,<4.0
-sshtunnel >=0.1.5,<1.0
-numpy >=1.18,<2.0
-pandas >=1.0,<2.0
-git+https://github.com/kokellab/dscience.git@0.1.2#egg=dscience
+numpy            >=1.18,<2.0
+pandas           >=1.0,<2.0
+peewee           >=3.13,<4.0
+PyMySQL          >=0.9,<1.0
+dscience         >=0.0.1
+sshtunnel[opt]   >=0.1.5,<1.0

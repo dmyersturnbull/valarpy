@@ -1,4 +1,3 @@
-import re
 from collections import defaultdict
 from typing import List, Union, Dict, Any, Optional, Callable, Sequence, Iterable, Mapping
 from numbers import Integral
@@ -74,11 +73,6 @@ class TableDescriptionFrame(SimpleFrame):
 	pass
 
 
-__hash_regex = re.compile('[0-9a-f]{12}')
-def __looks_like_submission_hash(submission_hash: str) -> bool:
-	return submission_hash == '_' * 12 or __hash_regex.match(submission_hash) is not None
-
-
 class BaseModel(Model):
 	"""
 	A table model in Valar through Valarpy and peewee.
@@ -138,7 +132,7 @@ class BaseModel(Model):
 				'choices': v.choices if hasattr(v, 'choices') else None,
 				'primary': v.primary_key,
 				'unique': v.unique,
-				'constraints': None if v.constraints is None else len(v.constraints)
+				'constraints': 0 if v.constraints is None else len(v.constraints)
 			}
 			for k, v in cls._meta.fields.items()
 		]
@@ -182,16 +176,15 @@ class BaseModel(Model):
 		"""
 		See `_schema_lines`.
 		"""
-		s = ''
-		for d in cls._description():
-			s += ' '.join([
+		return ',\n'.join([
+			' '.join([
 				d['name'],
 				d['type'] + (str(d['choices']) if d['choices'] is not None else ("({})".format(d['length']) if d['length'] is not None else '')),
 				('NULL' if d['nullable'] else 'NOT NULL'),
-				('PRIMARY KEY' if d['primary'] else ('UNIQUE' if d['unique'] else '')),
-				d['constraints']
-			]) + '\n'
-		return s
+				('PRIMARY KEY' if d['primary'] else ('UNIQUE' if d['unique'] else ''))
+			]).rstrip()
+			for d in cls._description()
+		])
 
 	@classmethod
 	def list_where(cls, *wheres: Sequence[peewee.Expression], **values: Mapping[str, Any]):
