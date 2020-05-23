@@ -1,6 +1,0 @@
-numpy            >=1.18,<2.0
-pandas           >=1.0,<2.0
-peewee           >=3.13,<4.0
-PyMySQL          >=0.9,<1.0
-dscience         >=0.0.1
-sshtunnel[opt]   >=0.1.5,<1.0

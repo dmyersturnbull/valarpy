@@ -1,0 +1,21 @@
+cff-version: 1.1.0
+message: Software reference
+title: Kale
+version: 2.0.0
+abstract: Zebrafish behavioral profiling and visualization in Python.
+authors:
+    -
+        family-names: Myers-Turnbull
+        given-names: Douglas
+    -
+        family-names: Ki
+        given-names: Chris S
+	-
+		family-names: Helsell
+		given-names: Cole
+keywords:
+    - valar
+    - orm
+    - zebrafish
+    - behavior
+date-released: 2020-05-15T20:00:00.000Z

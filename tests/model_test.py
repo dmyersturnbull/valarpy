@@ -1,16 +1,14 @@
-import unittest, os
+import pytest
 
-from valarpy.Valar import Valar
-valar = Valar(os.environ['VALARPY_CONFIG'])
-valar.open()
 from valarpy.model import *
 
 
-class ModelTest(unittest.TestCase):
+class TestModel:
 
-	def test_data(self):
-		self.assertEquals(Users(id=99, username='test')._data, {'id': 99, 'username': 'test'})
+    def test_create(self):
+        user = Users(username='hi', first_name='Hello', last_name='Hi')
+        assert user.id is None
 
 
 if __name__ == ['__main__']:
-	unittest.main()
+    pytest.main()
