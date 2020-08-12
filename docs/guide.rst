@@ -34,7 +34,7 @@ You can now type ``ssh valinor`` or ``ssh valinor.ucsf.edu`` to log in
 without a password.
 
 
-connect to Valinor
+Connect to Valinor
 ------------------
 
 An example configuration file is at
@@ -51,7 +51,7 @@ accessible remotely. There are two modes of connection: Valarpy can
 either use an existing SSH tunnel or create its own.
 
 
-set up new tunnel
+Set up new tunnel
 ~~~~~~~~~~~~~~~~~
 
 Replacing *53419* with a number of your choosing, The port can’t be
@@ -144,7 +144,7 @@ example usage with plain SQL
        global_connection.db = db    # you don't actually need to set this here
        do_my_stuff()
 
-See `more examples <https://github.com/kokellab/kokel-scripts>`__ or the
+See `more examples <https://github.com/dmyersturnbull/kokel-scripts>`__ or the
 `Peewee documentation <http://docs.peewee-orm.com/en/latest/>`__ for
 further information.
 

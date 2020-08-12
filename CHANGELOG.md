@@ -1,11 +1,10 @@
 # Changelog for valarpy
 
-Adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html),
-[Keep a Changelog](https://keepachangelog.com/en/1.0.0/) recommendations,
-and [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
+Adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+and [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [0.1.0] - 2020-05-17
+## [2.0.0] - 2020-08-11
 
-### Added:
-- Stub files.
+### Changed:
+- Build infrastructure and code organization.

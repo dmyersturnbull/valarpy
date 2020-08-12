@@ -12,7 +12,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "valarpy"
-version = "1.8.0"
+version = "2.0.0"
 description = "Python ORM to talk to Valar."
 keywords = ["valar", "orm", "zebrafish"]
 authors = ["Douglas Myers-Turnbull"]
@@ -54,48 +54,42 @@ Download = "https://pypi.org/project/valarpy/"
 
 
 [tool.poetry.dependencies]
+
 python                   = ">=3.7, <4"
-tomlkit                  = "^0.6.0"
-importlib-metadata       = "^1.6"
+importlib-metadata       = "^1"
+tomlkit                  = ">=0.5, <1.0"
 numpy                    = "^1.18"
-pandas                   = "^1.0"
-peewee                   = "^3.13"
-PyMySQL                  = "^0.9"
-dscience                 = ">=0.01"
+pandas                   = "^1"
+peewee                   = "^3"
+PyMySQL                  = ">=0.9, <1.0"
+pocketutils              = ">=0.1, <1.0"
+typeddfs                 = ">=0.2.1, <1.0"
+decorateme               = ">=0.1, <1.0"
 
 [tool.poetry.dev-dependencies]
-pre-commit               = "^2.3"
-pytest                   = "^5.4"
-coverage                 = {extras = ["toml"], version = "^5.1"}
-pytest-cov               = "^2.8"
-sphinx                   = "^3.0"
-sphinx-autoapi           = "^1.3"
-sphinx-rtd-theme         = "^0.4.3"
-mypy                     = "^0.750"
-flake8                   = "^3.7"
-flake8-docstrings        = "^1.5"
+pre-commit               = "^2"
+pytest                   = "^6"
+coverage                 = {extras = ["toml"], version = "^5"}
+pytest-cov               = "^2"
+sphinx                   = "^3"
+sphinx-autoapi           = "^1"
+sphinx-rtd-theme         = "^0"
+flake8                   = "^3"
+flake8-docstrings        = "^1"
 black                    = "=19.10b0"
-isort                    = "^4.3"
-sphinx-autodoc-typehints = "^1.10"
-xdoctest                 = "^0.12"
-hypothesis               = "^5.10"
-flake8-bandit            = "^2.1"
-flake8-bugbear           = "^20.1"
-coveralls                = "^2.0"
-tyrannosaurus            = "^0.5"
+isort                    = "^5"
+sphinx-autodoc-typehints = "^1"
+hypothesis               = "^5"
+flake8-bugbear           = "^20"
+coveralls                = "^2"
+tomlkit                  = ">=0.5, <1.0"
 
 [tool.poetry.extras]
-# manually listed
-docs    = ["sphinx", "sphinx-rtd-theme", "sphinx-autoapi"]
-# auto-filled from dev-deps
 dev     = [
-        "tyrannosaurus",
-        "pre-commit", "pytest", "coverage", "xdoctest", "hypothesis",
+        "pre-commit", "pytest", "coverage", "pytest-cov", "hypothesis",
         "sphinx", "sphinx-autodoc-typehints", "sphinx-autoapi",
-        "mypy",
         "flake8", "flake8-docstrings",
-        "black", "isort",
-        "flake8-bandit", "flake8-bugbear"
+        "black", "isort", "flake8-bugbear"
 ]
 
 
@@ -108,7 +102,7 @@ align    = true
 
 [tool.tyrannosaurus.sources]
 status             = "'Development'"
-date               = "'2020-05-17'"
+date               = "${today}"
 copyright          = "'Copyright 2016–2020'"
 version            = "tool.poetry.version"
 release            = "tool.poetry.version"

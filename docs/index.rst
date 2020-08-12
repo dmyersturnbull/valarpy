@@ -3,16 +3,12 @@ Valarpy
 
 .. toctree::
     :maxdepth: 1
-	
 
-Python code to talk to `Valar <https://github.com/kokellab/valar>`__.
+    guide
 
-There is more documentation available in the Valar readme, including an
-`Entity–Relationship
-Diagram <https://github.com/kokellab/valar/blob/alttables/docs/erd/valar_schema.png>`__,
-where the lines are `foreign
-keys <https://en.wikipedia.org/wiki/Foreign_key>`__ whose targets are
-denoted as forks.
+
+Python code to talk to `Valar <https://github.com/dmyersturnbull/valar>`__.
+There is more documentation available in the Valar readme.
 
 |Version status| |License| |PyPI - Python Version| |Docker| |GitHub
 release (latest SemVer including pre-releases)| |Latest version on PyPi|
@@ -35,4 +31,3 @@ release (latest SemVer including pre-releases)| |Latest version on PyPi|
    :target: https://valarpy.readthedocs.io/en/stable/
 .. |Build & test| image:: https://github.com/dmyersturnbull/valarpy/workflows/Build%20&%20test/badge.svg
    :target: https://github.com/dmyersturnbull/valarpy/actions
-  
