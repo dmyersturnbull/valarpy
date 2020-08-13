@@ -101,7 +101,7 @@ class BaseModel(Model):
         return "".join([c for c in self.__class__.__name__ if c.isupper()]).lower() + str(self.id)
 
     @property
-    def _data(self) -> Dict[str, Any]:
+    def _data(self) -> Dict[str, Any]:  # pragma: no cover
         """
         See `get_data`.
         """
@@ -111,6 +111,7 @@ class BaseModel(Model):
     @classmethod
     def get_desc_list(cls) -> List[Dict[str, str]]:
         """
+        Returns:
         :return: 	A list the columns in this table, where each is a dictionary of:
                     - keys name (str)
                     - type (str)
@@ -121,25 +122,7 @@ class BaseModel(Model):
                     - unique (bool)
                     - constraints (list of constraint objects)
         """
-        return cls._description()
-
-    @classmethod
-    def _description(cls) -> List[Dict[str, str]]:
-        """
-        See `get_description`.
-        """
-        return [
-            {
-                "name": v.name,
-                "type": v.field_type,
-                "nullable": v.null,
-                "choices": v.choices if hasattr(v, "choices") else None,
-                "primary": v.primary_key,
-                "unique": v.unique,
-                "constraints": 0 if v.constraints is None else len(v.constraints),
-            }
-            for k, v in cls._meta.fields.items()
-        ]
+        return cls.__description()
 
     @classmethod
     def get_desc(cls) -> TableDescriptionFrame:
@@ -157,14 +140,6 @@ class BaseModel(Model):
                     - unique (bool)
                     - constraints (list of constraint objects)
         """
-        return cls._description_df()
-
-    @classmethod
-    def _description_df(cls) -> TableDescriptionFrame:
-        """
-        See `get_description_df`.
-        """
-        # noinspection PyTypeChecker
 
         def _cfirst(dataframe: pd.DataFrame, col_seq) -> pd.DataFrame:
             if len(dataframe) == 0:  # will break otherwise
@@ -173,22 +148,15 @@ class BaseModel(Model):
                 return dataframe[col_seq + [c for c in dataframe.columns if c not in col_seq]]
 
         # noinspection PyTypeChecker
-        df = pd.DataFrame.from_dict(cls._description())
+        df = pd.DataFrame.from_dict(cls.__description())
         return TableDescriptionFrame(
             _cfirst(df, ["name", "type", "nullable", "choices", "primary", "unique"])
         )
 
     @classmethod
-    def get_schema_lines(cls) -> str:
+    def get_schema(cls) -> str:
         """
         :return: A string that is **approximately** the text returned by the SQL `SHOW CREATE TABLE tablename`
-        """
-        return cls._schema_lines()
-
-    @classmethod
-    def _schema_lines(cls) -> str:
-        """
-        See `_schema_lines`.
         """
         return ",\n".join(
             [
@@ -200,9 +168,27 @@ class BaseModel(Model):
                         ("PRIMARY KEY" if d["primary"] else ("UNIQUE" if d["unique"] else "")),
                     ]
                 ).rstrip()
-                for d in cls._description()
+                for d in cls.__description()
             ]
         )
+
+    @classmethod
+    def __description(cls) -> List[Dict[str, str]]:  # pragma: no cover
+        """
+        See `get_description`.
+        """
+        return [
+            {
+                "name": v.name,
+                "type": v.field_type,
+                "nullable": v.null,
+                "choices": v.choices if hasattr(v, "choices") else None,
+                "primary": v.primary_key,
+                "unique": v.unique,
+                "constraints": 0 if v.constraints is None else len(v.constraints),
+            }
+            for k, v in cls._meta.fields.items()
+        ]
 
     @classmethod
     def list_where(cls, *wheres: Sequence[peewee.Expression], **values: Mapping[str, Any]):
@@ -304,7 +290,7 @@ class BaseModel(Model):
             :raises TypeError: If the type of an element was otherwise invalid (not str, BaseModel, or int-like)
         """
 
-        def _x(thing):
+        def _x(thing):  # pragma: no cover
             if thing is None:
                 raise ValarLookupError("Could not find {} in {}".format(thing, cls))
             return thing
@@ -373,7 +359,7 @@ class BaseModel(Model):
         # if we need to join on other tables, we'll to do queries anyway
         model_things = make_dct(cls)
         if has_join_fn and len(model_things) > 0:
-            for match in do_q().where(cls << list(model_things.keys())):
+            for match in do_q().where(cls.id << [z.id for z in model_things.keys()]):
                 for ind in model_things[match]:
                     index_to_match[ind] = match
         elif len(model_things) > 0:
@@ -400,7 +386,14 @@ class BaseModel(Model):
     @classmethod
     def fetch_to_query(
         cls,
-        thing: Union[Integral, str, peewee.Model, peewee.Expression, Sequence[peewee.Expression]],
+        thing: Union[
+            Integral,
+            str,
+            peewee.Model,
+            peewee.Expression,
+            Sequence[peewee.Expression],
+            Sequence[Union[Integral, str, peewee.Model]],
+        ],
     ) -> Sequence[peewee.Expression]:
         """
         This method has limited but important reasons for being called.
@@ -424,13 +417,12 @@ class BaseModel(Model):
         elif all(isinstance(t, (Integral, str, Model)) for t in thing):
             # noinspection PyTypeChecker,PyUnresolvedReferences
             return [cls.id << {x.id for x in cls.fetch_all_or_none(thing) if x is not None}]
-        else:
-            raise TypeError("Invalid type for {} in {}".format(thing, cls))
+        raise TypeError("Invalid type for {} in {}".format(thing, cls))
 
     @classmethod
     def _build_or_query(
         cls, values: Sequence[Union[Model, int, str]], like: bool = False, regex: bool = False
-    ) -> Optional[peewee.Expression]:
+    ) -> Optional[peewee.Expression]:  # pragma: no cover
         assert not (like and regex)
         cols = list(cls.__indexing_cols())
         if len(values) == 0:
@@ -448,13 +440,13 @@ class BaseModel(Model):
         return cls.__ors_to_query(ors)
 
     @classmethod
-    def __gen_ors(cls, things, cols, function):
+    def __gen_ors(cls, things, cols, function):  # pragma: no cover
         for thing in things:
             for col in cols:
                 yield function(getattr(cls, col), thing)
 
     @classmethod
-    def __ors_to_query(cls, ors):
+    def __ors_to_query(cls, ors):  # pragma: no cover
         assert len(ors) > 0
         query = ors[0]
         for e in ors[1:]:
@@ -462,7 +454,7 @@ class BaseModel(Model):
         return query
 
     @classmethod
-    def __indexing_cols(cls):
+    def __indexing_cols(cls):  # pragma: no cover
         return {
             k
             for k, v in cls._meta.fields.items()
@@ -470,7 +462,7 @@ class BaseModel(Model):
         }
 
     @classmethod
-    def get_indexing_cols(cls):
+    def get_indexing_cols(cls):  # pragma: no cover
         return cls.__indexing_cols()
 
 
@@ -1360,6 +1352,6 @@ NullableCompoundLike = Union[None, int, str, Compounds]
 SensorLike = Union[int, str, Sensors]
 SensorDataLike = Union[None, Sequence[float], bytes, str]
 StimulusLike = Union[Stimuli, int, str]
-
 CompoundsLike = Union[CompoundLike, Iterable[CompoundLike]]
 BatchesLike = Union[BatchLike, Iterable[BatchLike]]
+NullableCompoundsLike = Union[None, Compounds, int, str, Iterable[Union[None, Compounds, int, str]]]

@@ -6,9 +6,6 @@ authors:
     -
         family-names: Myers-Turnbull
         given-names: Douglas
-    -
-        family-names: Ki
-        given-names: Chris S
 keywords:
     - valar
     - orm

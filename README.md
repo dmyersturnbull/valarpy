@@ -16,9 +16,9 @@ There is more documentation available in the Valar readme.
 Usage:
 
 ```python
-from valarpy import *
+from valarpy import Valar, model
 with Valar():
-    print(list(Refs.select()))
+    print(list(model.Refs.select()))
 ```
 
 An example connection f=config file:
@@ -32,10 +32,8 @@ An example connection f=config file:
   "db_port": 3306,
   "db_name": "valar"
 }
-
 ```
 
 [New issues](https://github.com/dmyersturnbull/valarpy/issues) and pull requests are welcome.
 Please refer to the [contributing guide](https://github.com/dmyersturnbull/valarpy/blob/master/CONTRIBUTING.md).
 Generated with [Tyrannosaurus](https://github.com/dmyersturnbull/tyrannosaurus).
-

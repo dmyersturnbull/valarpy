@@ -1,10 +1,10 @@
 """
-__metadata for this project.
+Metadata for this project.
 """
 
 import logging
-from typing import Union
 from pathlib import Path
+from typing import Union
 
 # importlib.__metadata is compat with Python 3.8 only
 from importlib_metadata import PackageNotFoundError
@@ -28,7 +28,7 @@ try:
     __author__ = __metadata["author"]
     __maintainer__ = __metadata["maintainer"]
     __contact__ = __metadata["maintainer"]
-except PackageNotFoundError:
+except PackageNotFoundError:  # pragma: no cover
     logger.error(
         "Could not load package __metadata for {}. Is it installed?".format(
             Path(__file__).absolute().parent.name
@@ -40,11 +40,17 @@ class Valar(__Valar):
     @classmethod
     def singleton(cls, config_file_path: Union[None, str, Path] = None):
         z = cls(config_file_path)
-        z.open()
         return z
 
 
-if __name__ == "__main__":
+@property
+def model():  # pragma: no cover
+    from valarpy import model
+
+    return model
+
+
+if __name__ == "__main__":  # pragma: no cover
     if __metadata is not None:
         print("{} (v{})".format(__metadata["name"], __metadata["version"]))
     else:

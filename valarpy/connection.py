@@ -6,11 +6,11 @@ from typing import Union
 from pocketutils.misc.connection import Connection
 
 
-class GLOBAL_CONNECTION:
+class GLOBAL_CONNECTION:  # pragma: no cover
     db = None
 
 
-def _get_existing_path(*paths):
+def _get_existing_path(*paths):  # pragma: no cover
     paths = [None if p is None else Path(p) for p in paths]
     for path in paths:
         if path is not None and path.exists():
@@ -29,14 +29,14 @@ class Valar:
 
     def __init__(self, config_file_path: Union[None, str, Path] = None):
         if config_file_path is None:
+            if "VALARPY_CONFIG" not in os.environ:
+                raise LookupError("Set VALARPY_CONFIG as an environment variable.")
             config_file_path = _get_existing_path(
                 os.environ.get("VALARPY_CONFIG"),
                 Path.home() / ".valarpy" / "config.json",
                 Path.home() / ".valarpy" / "read_only.json",
             )
-            if config_file_path is None:
-                raise FileNotFoundError("Set VALARPY_CONFIG as an environment variable.")
-            if not config_file_path.is_file():
+            if config_file_path is None or not config_file_path.is_file():
                 raise FileNotFoundError(
                     "Path for VALARPY_CONFIG '{}' does not exist or is not a file.".format(
                         config_file_path
@@ -65,7 +65,7 @@ class Valar:
     def __exit__(self, t, value, traceback):
         self.close()
 
-    def __del__(self):
+    def __del__(self):  # pragma: no cover
         self.close()
 
 
