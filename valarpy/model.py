@@ -10,11 +10,10 @@ from typing import Union
 import pandas as pd
 import peewee
 from peewee import *
-from typeddfs import UntypedDf
 
 from valarpy.connection import GLOBAL_CONNECTION
 
-database = GLOBAL_CONNECTION.db.peewee_database
+database = GLOBAL_CONNECTION.peewee_database
 
 
 class ValarLookupError(KeyError):
@@ -62,7 +61,7 @@ class UnknownField(object):  # pragma: no cover
         pass
 
 
-class TableDescriptionFrame(UntypedDf):
+class TableDescriptionFrame(pd.DataFrame):
     """
     A Pandas DataFrame subclass that contains the columns:
         - keys name (str)

@@ -57,14 +57,10 @@ Download = "https://pypi.org/project/valarpy/"
 
 python                   = ">=3.7, <4"
 importlib-metadata       = "^1"
-tomlkit                  = ">=0.5, <1.0"
-numpy                    = "^1.18"
 pandas                   = "^1"
 peewee                   = "^3"
 PyMySQL                  = ">=0.9, <1.0"
-pocketutils              = ">=0.1, <1.0"
 typeddfs                 = ">=0.2.1, <1.0"
-decorateme               = ">=0.1, <1.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit               = "^2"
@@ -79,14 +75,12 @@ flake8-docstrings        = "^1"
 black                    = "=19.10b0"
 isort                    = "^5"
 sphinx-autodoc-typehints = "^1"
-hypothesis               = "^5"
-flake8-bugbear           = "^20"
 coveralls                = "^2"
 tomlkit                  = ">=0.5, <1.0"
 
 [tool.poetry.extras]
 dev     = [
-        "pre-commit", "pytest", "coverage", "pytest-cov", "hypothesis",
+        "pre-commit", "pytest", "coverage", "pytest-cov",
         "sphinx", "sphinx-autodoc-typehints", "sphinx-autoapi",
         "flake8", "flake8-docstrings",
         "black", "isort", "flake8-bugbear"

@@ -1,13 +1,14 @@
 import logging
 import os
+import json
 from pathlib import Path
-from typing import Union
+from typing import Union, Dict, Any
 
-from pocketutils.misc.connection import Connection
+import peewee
 
 
 class GLOBAL_CONNECTION:  # pragma: no cover
-    db = None
+    peewee_database = None
 
 
 def _get_existing_path(*paths):  # pragma: no cover
@@ -34,6 +35,7 @@ class Valar:
             config_file_path = _get_existing_path(
                 os.environ.get("VALARPY_CONFIG"),
                 Path.home() / ".valarpy" / "config.json",
+                Path.home() / ".valarpy" / "connection.json",
                 Path.home() / ".valarpy" / "read_only.json",
             )
             if config_file_path is None or not config_file_path.is_file():
@@ -49,14 +51,15 @@ class Valar:
         self.open()
 
     def open(self) -> None:
-        db = Connection.from_json(str(self.config_file_path))
-        db.open()
-        db.connect_with_peewee()  # don't worry, this will be closed with the Connection
-        GLOBAL_CONNECTION.db = db  # set a global variable, which peewee will access
+        with open(self.config_file_path) as jscfg:
+            params: Dict[str, Any] = json.load(jscfg)
+            db = params.pop("database")
+            GLOBAL_CONNECTION.peewee_database = peewee.MySQLDatabase(db, **params)
+            GLOBAL_CONNECTION.peewee_database.connect()
 
     def close(self) -> None:
         logging.info("Closing connection to Valar")
-        GLOBAL_CONNECTION.db.close()
+        GLOBAL_CONNECTION.peewee_database.close()
 
     def __enter__(self):
         self.open()
@@ -69,4 +72,4 @@ class Valar:
         self.close()
 
 
-__all__ = ["GLOBAL_CONNECTION"]
+__all__ = ["GLOBAL_CONNECTION", "Valar"]

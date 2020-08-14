@@ -3,7 +3,6 @@
 [![Version status](https://img.shields.io/pypi/status/valarpy)](https://pypi.org/project/valarpy/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/valarpy)](https://pypi.org/project/valarpy/)
-[![Docker](https://img.shields.io/docker/v/dmyersturnbull/valarpy?color=green&label=DockerHub)](https://hub.docker.com/repository/docker/dmyersturnbull/valarpy)
 [![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/dmyersturnbull/valarpy?include_prereleases&label=GitHub)](https://github.com/dmyersturnbull/valarpy/releases)
 [![Latest version on PyPi](https://badge.fury.io/py/valarpy.svg)](https://pypi.org/project/valarpy/)
 [![Documentation status](https://readthedocs.org/projects/valarpy/badge/?version=latest&style=flat-square)](https://valarpy.readthedocs.io/en/stable/)
@@ -25,12 +24,11 @@ An example connection f=config file:
 
 ```json
 {
-  "local_bind_port": 53419,
-  "ssh_port": 22,
-  "db_username": "user",
-  "db_password": "password",
-  "db_port": 3306,
-  "db_name": "valar"
+    "port": 3306,
+    "user": "kaletest",
+    "password": "kale123",
+    "database": "valartest",
+    "host": "127.0.0.1"
 }
 ```
 
