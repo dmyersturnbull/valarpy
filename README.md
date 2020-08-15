@@ -20,7 +20,7 @@ with Valar():
     print(list(model.Refs.select()))
 ```
 
-An example connection f=config file:
+An example connection config file:
 
 ```json
 {

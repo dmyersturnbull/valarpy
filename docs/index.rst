@@ -11,8 +11,8 @@ Python code to talk to `Valar <https://github.com/dmyersturnbull/valar>`__.
 There is more documentation available in the Valar readme.
 
 |Version status| |License| |PyPI - Python Version| |Docker| |GitHub
-release (latest SemVer including pre-releases)| |Latest version on PyPi|
-|Documentation status| |Build & test| [|Maintainability| |Coverage|
+release| |Latest version on PyPi|
+|Documentation status| |Build & test|
 
 
 .. |Version status| image:: https://img.shields.io/pypi/status/valarpy
@@ -23,7 +23,7 @@ release (latest SemVer including pre-releases)| |Latest version on PyPi|
    :target: https://pypi.org/project/valarpy/
 .. |Docker| image:: https://img.shields.io/docker/v/dmyersturnbull/valarpy?color=green&label=DockerHub
    :target: https://hub.docker.com/repository/docker/dmyersturnbull/valarpy
-.. |GitHub release (latest SemVer including pre-releases)| image:: https://img.shields.io/github/v/release/dmyersturnbull/valarpy?include_prereleases&label=GitHub
+.. |GitHub release| image:: https://img.shields.io/github/v/release/dmyersturnbull/valarpy?include_prereleases&label=GitHub
    :target: https://github.com/dmyersturnbull/valarpy/releases
 .. |Latest version on PyPi| image:: https://badge.fury.io/py/valarpy.svg
    :target: https://pypi.org/project/valarpy/

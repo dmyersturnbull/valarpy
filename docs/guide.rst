@@ -1,7 +1,7 @@
-Guide
+Guide for new users
 ====================================
 
-set up SSH keys
+Set up SSH keys
 ---------------
 
 Set up your SSH keys as described in `How To Set Up SSH Keys \|
@@ -95,7 +95,7 @@ randomizes the tunnel port. That’s a very minor security benefit,
 however. For this mode, just leave ``ssh_host: "valinor.ucsf.edu"``
 
 
-simplest example
+Simplest example
 ----------------
 
 .. code:: python
@@ -109,7 +109,7 @@ simplest example
 
 The sections below show more flexible usage.
 
-example usage with Peewee
+Example usage with Peewee
 -------------------------
 
 .. code:: python
@@ -127,7 +127,7 @@ example usage with Peewee
        from valarpy.model import *  # you MUST import this AFTER setting global_connection.db
        do_my_stuff()
 
-example usage with plain SQL
+Example usage with plain SQL
 ----------------------------
 
 .. code:: python
@@ -149,7 +149,7 @@ See `more examples <https://github.com/dmyersturnbull/kokel-scripts>`__ or the
 further information.
 
 
-running in Jupyter notebooks
+Running in Jupyter notebooks
 ----------------------------
 
 Jupyter notebooks seem to drop the connection after the first cell. To
@@ -169,7 +169,7 @@ The database connection and SSH tunnels will hopefully be closed when
 Jupyter exits. You can also close bith using ``db.close()``.
 
 
-connecting from home
+Connecting from home
 --------------------
 
 The best way to use the database from home is to host a notebook server
@@ -182,7 +182,7 @@ covers how to set this up.
 up <https://github.com/kokellab/valar/blob/master/docs/jupyter-nb_server_overview.png>`__
 
 
-notes about tables
+Notes about tables
 ------------------
 
 Assay frames and features (such as MI) are stored as MySQL binary
