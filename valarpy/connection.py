@@ -7,6 +7,9 @@ from typing import Union, Dict, Any
 import peewee
 
 
+logger = logging.getLogger('valarpy')
+
+
 class GLOBAL_CONNECTION:  # pragma: no cover
     peewee_database = None
 
@@ -40,11 +43,10 @@ class Valar:
             )
             if config_file_path is None or not config_file_path.is_file():
                 raise FileNotFoundError(
-                    "Path for VALARPY_CONFIG '{}' does not exist or is not a file.".format(
-                        config_file_path
-                    )
+                    f"Path for VALARPY_CONFIG '{config_file_path}' does not exist or is not a file."
                 )
         self.config_file_path = config_file_path
+        self._db_name = None
 
     def reconnect(self):
         self.close()
@@ -53,12 +55,13 @@ class Valar:
     def open(self) -> None:
         with open(self.config_file_path) as jscfg:
             params: Dict[str, Any] = json.load(jscfg)
-            db = params.pop("database")
-            GLOBAL_CONNECTION.peewee_database = peewee.MySQLDatabase(db, **params)
-            GLOBAL_CONNECTION.peewee_database.connect()
+        self._db_name = params.pop("database")
+        logging.info(f"Opening connection to {self._db_name}")
+        GLOBAL_CONNECTION.peewee_database = peewee.MySQLDatabase(self._db_name, **params)
+        GLOBAL_CONNECTION.peewee_database.connect()
 
     def close(self) -> None:
-        logging.info("Closing connection to Valar")
+        logging.info(f"Closing connection to {self._db_name}")
         GLOBAL_CONNECTION.peewee_database.close()
 
     def __enter__(self):

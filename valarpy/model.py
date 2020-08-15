@@ -224,7 +224,7 @@ class BaseModel(Model):
             return thing
         elif isinstance(thing, peewee.Model):
             raise ValarTableTypeError(
-                "Fetching a {} on class {}".format(thing.__class__.__name__, cls.__name__)
+                f"Fetching a {thing.__class__.__name__} on class {cls.__name__}"
             )
         elif isinstance(thing, Integral) or isinstance(thing, float):
             # noinspection PyUnresolvedReferences
@@ -233,9 +233,7 @@ class BaseModel(Model):
             return cls.get_or_none(cls._build_or_query([thing], like=like, regex=regex))
         else:
             raise TypeError(
-                "Fetching with unknown type {} on class {}".format(
-                    thing.__class__.__name__, cls.__name__
-                )
+                f"Fetching with unknown type {thing.__class__.__name__} on class {cls.__name__}"
             )
 
     @classmethod
@@ -263,7 +261,7 @@ class BaseModel(Model):
         """
         found = cls.fetch_or_none(thing, like=like, regex=regex)
         if found is None:
-            raise ValarLookupError("Could not find {} in {}".format(thing, cls))
+            raise ValarLookupError(f"Could not find {thing} in {cls}")
         return found
 
     @classmethod
@@ -291,7 +289,7 @@ class BaseModel(Model):
 
         def _x(thing):  # pragma: no cover
             if thing is None:
-                raise ValarLookupError("Could not find {} in {}".format(thing, cls))
+                raise ValarLookupError(f"Could not find {thing} in {cls}")
             return thing
 
         return [_x(thing) for thing in cls.fetch_all_or_none(things)]
@@ -333,12 +331,12 @@ class BaseModel(Model):
         ]
         if any(bad_models):
             raise ValarTableTypeError(
-                "Fetching a {} on invalid classes {}".format(cls.__name__, set(bad_models))
+                f"Fetching a {cls.__name__} on invalid classes {set(bad_models)}"
             )
         bad_types = [not isinstance(thing, (cls, Integral, str)) for thing in things]
         if any(bad_types):
             raise TypeError(
-                "Fetching a {} on unknown types {}".format(cls.__name__, set(bad_types))
+                f"Fetching a {cls.__name__} on unknown types {set(bad_types)}"
             )
         # utility functions
         def do_q():
@@ -416,7 +414,7 @@ class BaseModel(Model):
         elif all(isinstance(t, (Integral, str, Model)) for t in thing):
             # noinspection PyTypeChecker,PyUnresolvedReferences
             return [cls.id << {x.id for x in cls.fetch_all_or_none(thing) if x is not None}]
-        raise TypeError("Invalid type for {} in {}".format(thing, cls))
+        raise TypeError(f"Invalid type for {thing} in {cls}")
 
     @classmethod
     def _build_or_query(
