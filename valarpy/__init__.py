@@ -3,10 +3,10 @@ Metadata for this project.
 """
 
 import logging
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import metadata as __load
 from pathlib import Path
 from typing import Union
-
-from importlib.metadata import PackageNotFoundError, metadata as __load
 
 from valarpy.connection import Valar as __Valar
 

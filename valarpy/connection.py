@@ -1,13 +1,12 @@
+import json
 import logging
 import os
-import json
 from pathlib import Path
-from typing import Union, Dict, Any
+from typing import Any, Dict, Union
 
 import peewee
 
-
-logger = logging.getLogger('valarpy')
+logger = logging.getLogger("valarpy")
 
 
 class GLOBAL_CONNECTION:  # pragma: no cover
@@ -24,7 +23,6 @@ def _get_existing_path(*paths):  # pragma: no cover
 class Valar:
     """
     Simplest way to use valarpy with Peewee.
-    Requires an environment variable named VALARPY_CONFIG that points to a JSON config file.
     Ex:
         >>> with Valar():
         >>>	import valarpy.model as model
@@ -48,7 +46,7 @@ class Valar:
         self.config_file_path = config_file_path
         self._db_name = None
 
-    def reconnect(self):
+    def reconnect(self) -> None:
         self.close()
         self.open()
 
