@@ -54,7 +54,7 @@ Download = "https://pypi.org/project/valarpy/"
 [tool.poetry.dependencies]
 python                   = ">=3.8, <4"
 pandas                   = "^1"
-peewee                   = "^3"
+peewee                   = ">=3.13, <4.0"
 PyMySQL                  = ">=0.9, <1.0"
 
 [tool.poetry.dev-dependencies]
@@ -64,7 +64,7 @@ coverage                 = {extras = ["toml"], version = "^5"}
 pytest-cov               = "^2"
 sphinx                   = "^3"
 sphinx-autoapi           = "^1"
-sphinx-rtd-theme         = "^0"
+sphinx-rtd-theme         = ">=0.5, <1.0"
 flake8                   = "^3"
 flake8-docstrings        = "^1"
 black                    = "=19.10b0"

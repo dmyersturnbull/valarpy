@@ -6,20 +6,20 @@ import pandas as pd
 import peewee
 from peewee import *
 
-from valarpy.connection import GLOBAL_CONNECTION
+from valarpy.connection import GlobalConnection
 
-database = GLOBAL_CONNECTION.peewee_database
+database = GlobalConnection.peewee_database
 
 
 class ValarLookupError(KeyError):
     """
-    A value wasn't found in Valar
+    A value wasn't found in Valar.
     """
 
 
 class ValarTableTypeError(TypeError):
     """
-    A function was passed a row of a table, but from the wrong table
+    A function was passed a row of a table, but from the wrong table.
     """
 
 
@@ -62,7 +62,8 @@ class UnknownField(object):  # pragma: no cover
 
 class TableDescriptionFrame(pd.DataFrame):
     """
-    A Pandas DataFrame subclass that contains the columns:
+    A Pandas DataFrame subclass that contains the columns::
+
         - keys name (str)
         - type (str)
         - length (int or None)
@@ -87,9 +88,13 @@ class BaseModel(Model):
 
     def get_data(self) -> Dict[str, Any]:
         """
-        Example usage:
-            >>> Users.get(Users.id == 1).get_data()  # {'id': 2, 'username': 'john', ...}
-        :return: the value of every field (column value)
+        Gets a dict of all the fields.
+
+        Examples:
+            Users.get(Users.id == 1).get_data()  # {'id': 2, 'username': 'john', ...}
+
+        Returns:
+            The value of every field (column value)
         """
         return self.__data__
 
@@ -117,15 +122,16 @@ class BaseModel(Model):
         Gets info about the columns as a list of dicts.
 
         Returns:
-            A list the columns in this table, where each is a dictionary of:
-                    - keys name (str)
-                    - type (str)
-                    - length (int or None)
-                    - nullable (bool)
-                    - choices (set or list)
-                    - primary (bool)
-                    - unique (bool)
-                    - constraints (list of constraint objects)
+            list of dicts:
+                A list the columns in this table, where each is a dictionary of::
+
+                  - keys name (str)
+                  - type (str)
+                  - nullable (bool)
+                  - choices (set or list)
+                  - primary (bool)
+                  - unique (bool)
+                  - constraints (list of constraint objects)
         """
         return cls.__description()
 
@@ -133,11 +139,14 @@ class BaseModel(Model):
     def get_desc(cls) -> TableDescriptionFrame:
         """
         Gets a description of this table as a Pandas DataFrame.
-        Example usage:
-            >>> Users.get_desc()
+
+        Examples:
+            Users.get_desc()
 
         Returns:
-            A TableDescriptionFrame (Pandas DataFrame subclass) of the columns:
+            A DataFrame:
+                A TableDescriptionFrame (Pandas DataFrame subclass) of the columns::
+
                     - keys name (str)
                     - type (str)
                     - length (int or None)
@@ -166,7 +175,7 @@ class BaseModel(Model):
         Gets the approximate schema string.
 
         Returns:
-            A string that is **approximately** the text returned by the SQL `SHOW CREATE TABLE tablename`
+            A string that is **approximately** the text returned by the SQL ``SHOW CREATE TABLE tablename``
         """
         return ",\n".join(
             [
@@ -184,9 +193,6 @@ class BaseModel(Model):
 
     @classmethod
     def __description(cls) -> List[Dict[str, str]]:  # pragma: no cover
-        """
-        See ``get_description``.
-        """
         return [
             {
                 "name": v.name,
@@ -225,15 +231,18 @@ class BaseModel(Model):
     ) -> Optional[peewee.Model]:
         """
         Gets the first (which is unique) match of the row by:
-            -   instance of this class (just returns it)
-            -   ``id`` columns (if `thing` is an integer-like type
-            -   any of this class's unique string columns;
-                more specifically, a column that is marked in SQL as both (``VARCHAR``, ``CHAR``, or ``ENUM``) and ``UNIQUE``
+            - instance of this class (just returns it)
+            - ``id`` columns (if ``thing`` is an integer-like type)
+            - any of this class's unique string columns;
+               more specifically, a column that is marked in SQL as both (``VARCHAR``, ``CHAR``, or ``ENUM``)
+               and ``UNIQUE``
+
         Also see ``fetch``, which raises an error if then row was not found.
-        Example usage:
-            >>> # assuming John has ID 2
-            >>> user = Users.fetch('john')
-            >>> print(user)  # Users(2)
+
+        Examples:
+            # assuming John has ID 2
+            user = Users.fetch('john')
+            print(user)  # Users(2)
 
         Args:
             thing: A string, int that
@@ -269,15 +278,18 @@ class BaseModel(Model):
     ) -> peewee.Model:
         """
         Gets the first (which is unique) match of the row by:
-            -   instance of this class (just returns it)
-            -   ``id`` columns (if `thing` is an integer-like type
-            -   any of this class's unique string columns;
-                more specifically, a column that is marked in SQL as both (``VARCHAR``, ``CHAR``,` or ``ENUM``) and ``UNIQUE``
-        Also see ``fetch_or_none``, which returns None if the row was not found
-        Example usage:
-            >>> # assuming John has ID 2
-            >>> user = Users.fetch('john')
-            >>> print(user)  # Users(2)
+            - instance of this class (just returns it)
+            - ``id`` columns (if ``thing`` is an integer-like type
+            - any of this class's unique string columns;
+              more specifically, a column that is marked in SQL as both (``VARCHAR``, ``CHAR``, or ``ENUM``)
+              and ``UNIQUE``
+
+        Also see ``fetch_or_none``, which returns None if the row was not found.
+
+        Examples:
+            # assuming John has ID 2
+            user = Users.fetch('john')
+            print(user)  # Users(2)
 
         Args:
             thing: A string, int that
@@ -288,9 +300,9 @@ class BaseModel(Model):
             The matching Peewee row instance
 
         Raises:
-            A ValarLookupError If the row was not found
-            ValarTableTypeError: If `thing` is an instance of BaseModel of the wrong type (not this class)
-            TypeError: If `thing` was not a str, int-like, or a BaseModel
+            ValarLookupError: If the row was not found
+            ValarTableTypeError: If ``thing`` is an instance of BaseModel of the wrong type (not this class)
+            TypeError: If ``thing`` was not a str, int-like, or a BaseModel
         """
         found = cls.fetch_or_none(thing, like=like, regex=regex)
         if found is None:
@@ -302,26 +314,27 @@ class BaseModel(Model):
         cls, things: Iterable[Union[Integral, str, peewee.Model]]
     ) -> Sequence[peewee.Model]:
         """
-            Fetches rows corresponding to `things` from their instances, IDs, or values from unique columns.
-            See ``fetch`` for full information.
-            Also see ``fetch_all_or_none`` for a similar function.
-            This method is preferrable to calling `fetch` repeatedly because it minimizes the number of queries.
-            Specifically, it will perform 0, 1, or 2 queries depending on the passed types:
-                - If only instances are passed, it just returns them (0 queries)
-                - If only IDs or only string values are passed, it performs 1 query
-                - If both IDs and string values are passed, it performs 2 queries
-            Example usage:
-                >>> # assuming John has ID 2 and Alex has user ID 14
-                >>> users = Users.fetch_all(['john', 14, 'john', Users.get(Users.id == 2)])
-                >>> print(users)  # [Users(2), Users(14), Users(2), Users(2)]
+        Fetches rows corresponding to ``things`` from their instances, IDs, or values from unique columns.
+        See ``fetch`` for full information.
+        Also see ``fetch_all_or_none`` for a similar function.
+        This method is preferrable to calling ``fetch`` repeatedly because it minimizes the number of queries.
+        Specifically, it will perform 0, 1, or 2 queries depending on the passed types
+            - If only instances are passed, it just returns them (0 queries)
+            - If only IDs or only string values are passed, it performs 1 query
+            - If both IDs and string values are passed, it performs 2 queries
 
-            Returns:
-                A sequence of the rows found, in the same order as they were passed
+        Examples:
+            # assuming John has ID 2 and Alex has user ID 14
+            users = Users.fetch_all(['john', 14, 'john', Users.get(Users.id == 2)])
+            print(users)  # [Users(2), Users(14), Users(2), Users(2)]
 
-            Raises:
-                ValarLookupError: If any of the elements of `things` was not found
-                ValarTableTypeError: If an instance of a BaseModel of the wrong type (not this class) was passed
-                TypeError: If the type of an element was otherwise invalid (not str, BaseModel, or int-like)
+        Returns:
+            A sequence of the rows found, in the same order as they were passed
+
+        Raises:
+            ValarLookupError: If any of the elements of ``things`` was not found
+            ValarTableTypeError: If an instance of a BaseModel of the wrong type (not this class) was passed
+            TypeError: If the type of an element was otherwise invalid (not str, BaseModel, or int-like)
         """
 
         def _x(thing):  # pragma: no cover
@@ -338,25 +351,26 @@ class BaseModel(Model):
         join_fn: Optional[Callable[[peewee.Expression], peewee.Expression]] = None,
     ) -> Iterable[peewee.Model]:
         """
-            Fetches rows corresponding to ``things`` from their instances, IDs, or values from unique columns.
-            See ``fetch`` for full information.
-            Also see ``fetch_all`` for a similar function.
-            This method is preferrable to calling ``fetch`` repeatedly because it minimizes the number of queries.
-            Specifically, it will perform 0, 1, or 2 queries depending on the passed types:
-                - If only instances are passed, it just returns them (0 queries)
-                - If only IDs or only string values are passed, it performs 1 query
-                - If both IDs and string values are passed, it performs 2 queries
-            Example usage:
-                >>> # assuming John has ID 2 and Alex has user ID 14
-                >>> users = Users.fetch_all_or_none(['john', 14, 'john', Users.get(Users.id == 2)])
-                >>> print(users)  # [Users(2), Users(14), Users(2), Users(2)]
+        Fetches rows corresponding to ``things`` from their instances, IDs, or values from unique columns.
+        See ``fetch`` for full information.
+        Also see ``fetch_all`` for a similar function.
+        This method is preferrable to calling ``fetch`` repeatedly because it minimizes the number of queries.
+        Specifically, it will perform 0, 1, or 2 queries depending on the passed types
+            - If only instances are passed, it just returns them (0 queries)
+            - If only IDs or only string values are passed, it performs 1 query
+            - If both IDs and string values are passed, it performs 2 queries
 
-            Returns:
-                A sequence of the rows found, or None if they were not found; in the same order as they were passed
+        Examples:
+            # assuming John has ID 2 and Alex has user ID 14
+            users = Users.fetch_all_or_none(['john', 14, 'john', Users.get(Users.id == 2)])
+            print(users)  # [Users(2), Users(14), Users(2), Users(2)]
 
-            Raises:
-                ValarTableTypeError: If an instance of a BaseModel of the wrong type (not this class) was passed
-                TypeError: If the type of an element was otherwise invalid (not str, BaseModel, or int-like)
+        Returns:
+            A sequence of the rows found, or None if they were not found; in the same order as they were passed
+
+        Raises:
+            ValarTableTypeError: If an instance of a BaseModel of the wrong type (not this class) was passed
+            TypeError: If the type of an element was otherwise invalid (not str, BaseModel, or int-like)
         """
         # modify arguments
         things = list(things)
@@ -434,22 +448,24 @@ class BaseModel(Model):
         """
         This method has limited but important reasons for being called.
         See ``fetch``, ``fetch_or_none``, ``fetch_all``, or ``fetch_all_or_none`` for more commonly used functions.
-        Returns a sequence of Peewee expressions corresponding to WHERE statements:
-            - If the instance is one of (int, str, or model), that the row is the one passed, matched by ID or unique column value as needed
+        Returns a sequence of Peewee expressions corresponding to WHERE statements
+            - If the instance is one of (int, str, or model), that the row is the one passed,
+              matched by ID or unique column value as needed
             - If the instance is a Peewee expression itself, that the expression matches
 
         Args:
-            thing: An int-type to be looked up by the ``id`` column, a ``str`` to be looked up by:
-                - a unique column value
-                - a model instance
-                - an expression
-                - a list of expressions
+            thing: An int-type to be looked up by the ``id`` column, a ``str``.
+                Looked up by:
+                    - a unique column value
+                    - a model instance
+                    - an expression
+                    - a list of expressions
 
         Returns:
             A sequence of Peewee expressions to be joined with AND
 
         Raises:
-            ValarTableTypeError: If `thing` is an instance of BaseModel of the wrong type (not this class)
+            ValarTableTypeError: If ``thing`` is an instance of BaseModel of the wrong type (not this class)
             TypeError: If ``thing`` was not a str, int-like, or a ``BaseModel`` instance
         """
         if isinstance(thing, (Integral, str, Model, peewee.Expression)):

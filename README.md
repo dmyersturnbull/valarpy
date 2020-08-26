@@ -15,8 +15,8 @@ There is more documentation available in the Valar readme.
 Usage:
 
 ```python
-from valarpy import Valar, model
-with Valar():
+import valarpy
+with valarpy.opened() as model:
     print(list(model.Refs.select()))
 ```
 

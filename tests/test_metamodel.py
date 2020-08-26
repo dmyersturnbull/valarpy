@@ -11,7 +11,7 @@ def setup():
         yield
 
 
-class TestModel:
+class TestMetamodel:
     def test_create(self, setup):
         from valarpy.model import Users
 
@@ -47,6 +47,7 @@ class TestModel:
         with pytest.raises(ValarTableTypeError):
             Refs.fetch_or_none(Users(id=1))
         with pytest.raises(TypeError):
+            # noinspection PyTypeChecker
             Refs.fetch_or_none(lambda x: x)
         ref = Refs.fetch_or_none("ref_four")
         assert ref is not None
@@ -79,6 +80,7 @@ class TestModel:
         with pytest.raises(ValarTableTypeError):
             Refs.fetch_all_or_none([Users(id=1)])
         with pytest.raises(TypeError):
+            # noinspection PyTypeChecker
             Refs.fetch_all_or_none([lambda x: x])
         # with a join fn
         dat = Refs.fetch_all_or_none(["ref_four"], join_fn=lambda s: s)
@@ -133,8 +135,10 @@ class TestModel:
         assert [getattr(ref, "id", None) for ref in query] == []
         # test bad queries
         with pytest.raises(TypeError):
+            # noinspection PyTypeChecker
             Refs.fetch_to_query([lambda x: x])
         with pytest.raises(TypeError):
+            # noinspection PyTypeChecker
             Refs.fetch_to_query(lambda x: x)
 
     def test_list_where(self, setup):
@@ -192,12 +196,6 @@ class TestModel:
 
         control = ControlTypes(id=1)
         assert control.sstring == "ct1"
-
-    def test_fancy_import(self):
-        from valarpy import Valar, model
-
-        with Valar(Path(__file__).parent / "resources" / "connection.json"):
-            assert len(list(model.Refs.select())) == 1
 
 
 if __name__ == ["__main__"]:

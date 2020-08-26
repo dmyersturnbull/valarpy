@@ -5,13 +5,13 @@ Valarpy
     :maxdepth: 1
 
     guide
+    autoapi/index
 
 
 Python code to talk to `Valar <https://github.com/dmyersturnbull/valar>`__.
 There is more documentation available in the Valar readme.
 
-|Version status| |License| |PyPI - Python Version| |Docker| |GitHub
-release| |Latest version on PyPi|
+|Version status| |License| |PyPI - Python Version| |Docker| |GitHub release| |Latest version on PyPi|
 |Documentation status| |Build & test|
 
 

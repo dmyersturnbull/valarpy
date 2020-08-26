@@ -9,7 +9,13 @@ from typing import Union as __Union
 import peewee
 from peewee import *
 
-from valarpy.metamodel import BaseModel, EnumField, ValarLookupError, ValarTableTypeError
+from valarpy.metamodel import (
+    BaseModel,
+    EnumField,
+    GlobalConnection,
+    ValarLookupError,
+    ValarTableTypeError,
+)
 
 
 class Suppliers(BaseModel):  # pragma: no cover
@@ -109,7 +115,7 @@ class Projects(BaseModel):  # pragma: no cover
     type = ForeignKeyField(column_name="type_id", field="id", model=ProjectTypes, null=True)
 
     class Meta:
-        table_name = "superprojects"
+        table_name = "projects"
 
 
 class TemplatePlates(BaseModel):  # pragma: no cover
@@ -550,34 +556,6 @@ class Features(BaseModel):  # pragma: no cover
         table_name = "features"
 
 
-class GeneticConstructs(BaseModel):  # pragma: no cover
-    bacterial_strain = CharField(index=True, null=True)
-    box_number = IntegerField(index=True)
-    created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-    creator = ForeignKeyField(column_name="creator_id", field="id", model=Users)
-    date_made = DateTimeField(index=True, null=True)
-    description = CharField()
-    kind = EnumField(
-        choices=("plasmid", "guide", "morpholino", "other"), index=True
-    )  # auto-corrected to Enum
-    location = ForeignKeyField(column_name="location_id", field="id", model=Locations, null=True)
-    name = CharField(unique=True)
-    notes = TextField(null=True)
-    pmid = CharField(index=True, null=True)
-    pub_link = CharField(null=True)
-    raw_file = BlobField(null=True)  # auto-corrected to BlobField
-    raw_file_sha1 = BlobField(index=True, null=True)  # auto-corrected to BlobField
-    ref = ForeignKeyField(column_name="ref_id", field="id", model=Refs)
-    selection_marker = CharField(null=True)
-    supplier = ForeignKeyField(column_name="supplier_id", field="id", model=Suppliers, null=True)
-    tube_number = IntegerField(index=True)
-    vector = CharField(index=True, null=True)
-
-    class Meta:
-        table_name = "genetic_constructs"
-        indexes = ((("box_number", "tube_number"), True),)
-
-
 class LogFiles(BaseModel):  # pragma: no cover
     created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
     run = ForeignKeyField(column_name="run_id", field="id", model=Runs)
@@ -799,7 +777,7 @@ class TemplateTreatments(BaseModel):  # pragma: no cover
 class TemplateWells(BaseModel):  # pragma: no cover
     age_expression = CharField()
     control_type = ForeignKeyField(
-        column_name="control_type", field="id", model=ControlTypes, null=True
+        column_name="control_type_id", field="id", model=ControlTypes, null=True
     )
     group_expression = CharField()
     n_expression = CharField()
@@ -848,19 +826,6 @@ class BatchAnnotations(BaseModel):  # pragma: no cover
 
     class Meta:
         table_name = "batch_annotations"
-
-
-class DagsToCreate(BaseModel):  # pragma: no cover
-    created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
-    dag_created = IntegerField(constraints=[SQL("DEFAULT 0")])
-    feature_type = ForeignKeyField(
-        column_name="feature_type", field="id", model=Features, null=True
-    )
-    submission_hash = CharField()
-
-    class Meta:
-        table_name = "dags_to_create"
-        indexes = ((("submission_hash", "feature_type"), True),)
 
 
 ExpressionLike = peewee.ColumnBase
