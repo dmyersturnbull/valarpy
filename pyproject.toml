@@ -12,7 +12,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "valarpy"
-version = "2.1.0"
+version = "2.2.0"
 description = "Python ORM to talk to Valar."
 keywords = ["valar", "orm", "zebrafish"]
 authors = ["Douglas Myers-Turnbull"]

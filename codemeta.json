@@ -7,7 +7,7 @@
     "codeRepository":"https://github.com/dmyersturnbull/valarpy",
     "issueTracker":"https://github.com/dmyersturnbull/valarpy/issues",
     "license":"https://www.apache.org/licenses/LICENSE-2.0",
-    "version":"2.1.0",
+    "version":"2.2.0",
     "author":[
         {
             "@type":"Person",
@@ -38,7 +38,7 @@
 		"zebrafish",
         "behavior"
 	],
-    "dateCreated":"2017-01-01",
+    "dateCreated":"2016-11-07",
     "datePublished":"2020-05-17",
     "programmingLanguage":"Python"
 }

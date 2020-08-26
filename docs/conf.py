@@ -1,5 +1,5 @@
 """
-Sphinx config file for Tyrannosaurus.
+Sphinx config file.
 
 Uses several extensions to get API docs and sourcecode.
 https://www.sphinx-doc.org/en/master/usage/configuration.html

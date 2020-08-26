@@ -796,32 +796,13 @@ CREATE TABLE `submission_params` (
 
 
 --
--- Table structure for table `submission_record_status`
---
-CREATE TABLE `submission_statuses` (
-    `id` tinyint(3) unsigned not null auto_increment,
-    `name` varchar(60),
-    `is_failure` bool,
-    `is_recoverable` bool,
-     `is_on_sauron` bool,
-     `is_finished` bool,
-     PRIMARY KEY (`id`),
-     UNIQUE KEY `record_status_name_unique` (`name`),
-     KEY `is_failure` (`is_failure`),
-     KEY `is_recoverable` (`is_recoverable`),
-     KEY `is_on_sauron` (`is_on_sauron`),
-     KEY `is_finished` (`is_finished`)
-);
-
-
---
 -- Table structure for table `submission_records`
 --
 
 CREATE TABLE `submission_records` (
   `id` int(10) unsigned not null auto_increment,
   `submission_id` mediumint(8) unsigned not null,
-  `status_id` tinyint(3) unsigned not null,
+  `status` varchar(100) default null,
   `sauron_id` tinyint(3) unsigned not null,
   `datetime_modified` datetime not null,
   `created` timestamp not null default current_timestamp(),
@@ -829,8 +810,7 @@ CREATE TABLE `submission_records` (
   KEY `record_sauron` (`sauron_id`),
   KEY `record_submission` (`submission_id`),
   CONSTRAINT `record_to_sauron` FOREIGN KEY (`sauron_id`) REFERENCES `saurons` (`id`),
-  CONSTRAINT `record_to_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `record_to_status` FOREIGN KEY (`status_id`) REFERENCES `submission_statuses` (`id`)
+  CONSTRAINT `record_to_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 

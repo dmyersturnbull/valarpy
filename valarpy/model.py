@@ -727,22 +727,11 @@ class SubmissionParams(BaseModel):  # pragma: no cover
         indexes = ((("submission", "name"), True),)
 
 
-class SubmissionStatuses(BaseModel):
-    name = CharField(60, unique=True)
-    is_failure = BooleanField(index=True)
-    is_recoverable = BooleanField(index=True)
-    is_on_sauron = BooleanField(index=True)
-    is_finished = BooleanField(index=True)
-
-    class Meta:
-        table_name = "submission_statuses"
-
-
 class SubmissionRecords(BaseModel):  # pragma: no cover
     created = DateTimeField(constraints=[SQL("DEFAULT current_timestamp()")])
     datetime_modified = DateTimeField()
     sauron = ForeignKeyField(column_name="sauron_id", field="id", model=Saurons)
-    status = ForeignKeyField(column_name="status_id", field="id", model=SubmissionStatuses)
+    status = CharField(index=True)
     submission = ForeignKeyField(column_name="submission_id", field="id", model=Submissions)
 
     class Meta:
