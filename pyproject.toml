@@ -12,7 +12,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "valarpy"
-version = "2.2.0"
+version = "3.0.0"
 description = "Python ORM to talk to Valar."
 keywords = ["valar", "orm", "zebrafish"]
 authors = ["Douglas Myers-Turnbull"]
@@ -27,6 +27,7 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
 	"Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -53,9 +54,9 @@ Download = "https://pypi.org/project/valarpy/"
 
 [tool.poetry.dependencies]
 python                   = ">=3.8, <4"
-pandas                   = "^1"
-peewee                   = ">=3.13, <4.0"
-PyMySQL                  = ">=0.9, <1.0"
+pandas                   = ">=1.1, <2.0"
+peewee                   = ">=3.14, <4.0"
+PyMySQL                  = ">=0.10, <1.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit               = "^2"
@@ -67,7 +68,7 @@ sphinx-autoapi           = "^1"
 sphinx-rtd-theme         = ">=0.5, <1.0"
 flake8                   = "^3"
 flake8-docstrings        = "^1"
-black                    = "=19.10b0"
+black                    = "=20.8b1"
 isort                    = "^5"
 sphinx-autodoc-typehints = "^1"
 coveralls                = "^2"

@@ -3,6 +3,11 @@
 Adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 and [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.0.0] - 2020-12-21
+
+### Changed
+- Added base classes that the Peewee model classes inherit from
+
 
 ## [2.2.0] - 2020-08-26
 

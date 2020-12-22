@@ -9,10 +9,6 @@ PATH = Path(__file__).parent / "resources" / "connection.json"
 
 
 class TestModel:
-    def test_fancy_import(self):
-        with valarpy.Valar(PATH):
-            model = valarpy.new_model()
-            assert len(list(model.Refs.select())) == 1
 
     def test_fancy_open(self):
         import valarpy
